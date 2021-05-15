@@ -2,6 +2,6 @@ run:
 	uvicorn main:app --reload
 
 format:
-	black -l 120 main.py galahad/
+	black -l 120 main.py galahad/ tests/
 
-	isort main.py  galahad/
+	isort main.py  galahad/ tests/

@@ -1,8 +1,16 @@
-from fastapi import FastAPI, Path
+from functools import lru_cache
 
+from fastapi import Depends, FastAPI, Path, Response, status
+
+from galahad.config import Settings
 from galahad.model import *
 
 app = FastAPI()
+
+
+@lru_cache()
+def get_settings():
+    return Settings()
 
 
 # Meta
@@ -10,15 +18,28 @@ app = FastAPI()
 
 @app.get("/ping")
 def ping():
-    return {"ping": "pong!"}
+    return {"ping": "pong"}
 
 
 # Dataset
 
 
-@app.put("/dataset/{dataset_id}")
-def create_dataset(dataset_id: str = Path(..., title="Identifier of the dataset that should be created")):
-    pass
+@app.put(
+    "/dataset/{dataset_id}",
+    responses={204: {"description": "Dataset created."}, 409: {"description": "Dataset already exists."}},
+    status_code=204,
+)
+def create_dataset(
+    dataset_id: str = Path(..., title="Identifier of the dataset that should be created"),
+    settings: Settings = Depends(get_settings),
+):
+    """ Creates a dataset under the given `dataset_id`. Does nothing and returns `409` if it already existed. """
+    p = settings.data_dir / dataset_id
+    if p.exists():
+        return Response(content="", status_code=status.HTTP_409_CONFLICT)
+    else:
+        p.mkdir(parents=True)
+        return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.put("/dataset/{dataset_id}/{document_id}")
