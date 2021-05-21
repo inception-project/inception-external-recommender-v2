@@ -3,8 +3,8 @@ import shutil
 
 from fastapi import FastAPI, HTTPException, Path, Response, status
 
+from galahad.classifier import ClassifierStore
 from galahad.dataclasses import *
-from galahad.model import ModelStore
 from galahad.util import get_datasets_folder, get_document_path
 
 # This regex forbids two consecutive dots so that ../foo does not work
@@ -14,7 +14,7 @@ PATH_REGEX = r"^[a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)*$"
 
 def register_routes(app: FastAPI):
     data_dir: pathlib.Path = app.state.data_dir
-    model_store: ModelStore = app.state.model_store
+    classifier_store: ClassifierStore = app.state.classifier_store
 
     # Meta
 
@@ -116,23 +116,23 @@ def register_routes(app: FastAPI):
 
     # Model
 
-    @app.get("/model", response_model=List[ModelInfo])
-    def get_all_model_infos():
+    @app.get("/classifier", response_model=List[ClassifierInfo])
+    def get_all_classifier_infos():
         pass
 
-    @app.get("/model/{model_id}", response_model=ModelInfo)
-    def get_model_info(model_id: str = Path(..., title="Identifier of the model whose info to query")):
+    @app.get("/classifier/{classifier_id}", response_model=ClassifierInfo)
+    def get_classifier_info(classifier_id: str = Path(..., title="Identifier of the classifier whose info to query")):
         pass
 
-    @app.delete("/model/{model_id}")
-    def delete_model(model_id: str = Path(..., title="Identifier of the model to delete")):
+    @app.delete("/classifier/{classifier_id}")
+    def delete_classifier(classifier_id: str = Path(..., title="Identifier of the classifier to delete")):
         pass
 
     # Train
 
-    @app.post("/model/{model_id}/train/{dataset_id}")
+    @app.post("/classifier/{classifier_id}/train/{dataset_id}")
     def train_on_dataset(
-        model_id: str = Path(..., title="Identifier of the model that should be trained"),
+        classifier_id: str = Path(..., title="Identifier of the model that should be trained"),
         dataset_id: str = Path(
             ..., title="Identifier of the dataset that should be used for training", regex=PATH_REGEX
         ),
@@ -141,19 +141,19 @@ def register_routes(app: FastAPI):
 
     # Prediction
 
-    @app.post("/model/{model_id}/predict", response_model=PredictionResponse)
+    @app.post("/model/{classifier_id}/predict", response_model=PredictionResponse)
     def predict_for_document(
         request: PredictionRequest,
-        model_id: str = Path(..., title="Identifier of the model that should be used for prediction"),
+        classifier_id: str = Path(..., title="Identifier of the model that should be used for prediction"),
     ):
-        return {"model_id": model_id}
+        return {"classifier_id": classifier_id}
 
-    @app.post("/model/{model_id}/predict/{dataset_id}/{document_id}")
+    @app.post("/model/{classifier_id}/predict/{dataset_id}/{document_id}")
     def predict_on_dataset(
-        model_id: str = Path(..., title="Identifier of the model that should be used for prediction"),
+        classifier_id: str = Path(..., title="Identifier of the model that should be used for prediction"),
         dataset_id: str = Path(..., title="Identifier of the dataset that should be used for prediction"),
         document_id: str = Path(
             ..., title="Identifier of the document in the given dataset that should be used for prediction"
         ),
     ):
-        return {"model_id": model_id, "dataset_id": dataset_id, "document_id": document_id}
+        return {"classifier_id": classifier_id, "dataset_id": dataset_id, "document_id": document_id}

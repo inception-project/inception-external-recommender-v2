@@ -2,9 +2,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-from galahad.model import ModelStore
-# This regex forbids two consecutive dots so that ../foo does not work
-# to discovery files outside of the document folder
+from galahad.classifier import Classifier, ClassifierStore
 from galahad.routes import register_routes
 
 
@@ -15,7 +13,13 @@ class GalahadServer(FastAPI):
         if data_dir is None:
             data_dir = Path(__file__).resolve().parents[1]
 
-        self.state.data_dir = data_dir
-        self.state.model_store = ModelStore()
+        self._data_dir = data_dir
+        self._classifier_store = ClassifierStore()
+
+        self.state.data_dir = self._data_dir
+        self.state.classifier_store = self._classifier_store
 
         register_routes(self)
+
+    def add_classifier(self, name: str, classifier: Classifier):
+        self._classifier_store.add_classifier(name, classifier)

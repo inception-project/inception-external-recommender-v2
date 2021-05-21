@@ -53,10 +53,10 @@ class DocumentList(BaseModel):
         }
 
 
-# Model
+# Classifier
 
 
-class ModelInfo(BaseModel):
+class ClassifierInfo(BaseModel):
     name: str
     path: str
     consumes: List[str]
