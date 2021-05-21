@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from galahad.dataclasses import ClassifierInfo
 
@@ -21,15 +21,20 @@ class ClassifierStore:
 
         self._classifiers[name] = classifier
 
-    def get_classifier_info(self, name: str) -> ClassifierInfo:
+    def get_classifier_info(self, name: str) -> Optional[ClassifierInfo]:
         """Builds classifier info for the classifier given by `name` and returns it.
 
         Args:
             name: The name of the classifier whose info to get.
 
         Returns:
-            The classifier info of the classifier named `name`.
+            The classifier info of the classifier named `name` if it was found, else `None`.
         """
+        classifier = self._classifiers.get(name)
+        if not classifier:
+            return None
+
+        return ClassifierInfo(name=name)
 
     def get_classifier_infos(self) -> List[ClassifierInfo]:
         """Builds classifier infos for all classifiers in this store and returns it.

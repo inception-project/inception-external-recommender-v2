@@ -58,9 +58,9 @@ class DocumentList(BaseModel):
 
 class ClassifierInfo(BaseModel):
     name: str
-    path: str
-    consumes: List[str]
-    produces: List[str]
+
+    class Config:
+        schema_extra = {"example": {"name": "ExampleClassifier"}}
 
 
 # Training

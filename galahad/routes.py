@@ -36,7 +36,7 @@ def register_routes(app: FastAPI):
         dataset_folder = get_datasets_folder(data_dir, dataset_id)
 
         if dataset_folder.exists():
-            raise HTTPException(status_code=409, detail=f"Dataset with id [{dataset_id}] already exists")
+            raise HTTPException(status_code=409, detail=f"Dataset with id [{dataset_id}] already exists.")
 
         dataset_folder.mkdir(parents=True)
         return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
@@ -59,7 +59,7 @@ def register_routes(app: FastAPI):
         dataset_folder = get_datasets_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
-            raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found")
+            raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found.")
 
         names = []
         versions = []
@@ -86,7 +86,7 @@ def register_routes(app: FastAPI):
         dataset_folder = get_datasets_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
-            raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found")
+            raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found.")
 
         shutil.rmtree(dataset_folder)
 
@@ -106,7 +106,7 @@ def register_routes(app: FastAPI):
         dataset_folder = get_datasets_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
-            raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found")
+            raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found.")
 
         document_path = get_document_path(data_dir, dataset_id, document_id)
         with document_path.open("w", encoding="utf-8") as f:
@@ -116,17 +116,35 @@ def register_routes(app: FastAPI):
 
     # Model
 
-    @app.get("/classifier", response_model=List[ClassifierInfo])
+    @app.get(
+        "/classifier",
+        response_model=List[ClassifierInfo],
+        responses={
+            200: {"description": "Returns list of documents in dataset."},
+        },
+        status_code=200,
+    )
     def get_all_classifier_infos():
-        pass
+        """ Gets the classifier info for all classifiers managed by this server. """
+        return classifier_store.get_classifier_infos()
 
-    @app.get("/classifier/{classifier_id}", response_model=ClassifierInfo)
+    @app.get(
+        "/classifier/{classifier_id}",
+        response_model=ClassifierInfo,
+        responses={
+            200: {"description": "Returns the classifier info of the requested classifier."},
+            404: {"description": "Classifier not found."},
+        },
+        status_code=200,
+    )
     def get_classifier_info(classifier_id: str = Path(..., title="Identifier of the classifier whose info to query")):
-        pass
+        """ Gets the classifier info for the requested classifier id if it exists. """
+        classifier_info = classifier_store.get_classifier_info(classifier_id)
 
-    @app.delete("/classifier/{classifier_id}")
-    def delete_classifier(classifier_id: str = Path(..., title="Identifier of the classifier to delete")):
-        pass
+        if classifier_info is None:
+            raise HTTPException(status_code=404, detail=f"Classifier with id [{classifier_id}] not found.")
+
+        return classifier_info
 
     # Train
 
