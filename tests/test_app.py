@@ -101,6 +101,31 @@ def test_list_documents_in_dataset():
     assert document_list.versions == expected_versions
 
 
+# DELETE delete_dataset
+
+
+def test_delete_dataset_dataset_does_not_exist_already():
+    response = client.delete("/dataset/test_dataset")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Dataset with id [test_dataset] not found"}
+
+
+def test_delete_dataset_dataset_exist_already():
+    p = tmpdir / "test_dataset"
+    client.put("/dataset/test_dataset")
+    assert p.is_dir()
+
+    for i in range(3):
+        request = Document.Config.schema_extra["example"]
+        response = client.put(f"/dataset/test_dataset/test_document{i}", json=request)
+        assert response.status_code == 204
+
+    response = client.delete("/dataset/test_dataset")
+    assert response.status_code == 204
+    assert response.text == ""
+    assert not p.exists()
+
+
 # PUT add_document_to_dataset
 
 
