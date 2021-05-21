@@ -5,14 +5,21 @@ from functools import lru_cache
 from fastapi import Depends, FastAPI, HTTPException, Path, Response, status
 
 from galahad.config import Settings
-from galahad.model import *
+from galahad.dataclasses import *
+from galahad.model import ModelStore
 from galahad.util import get_datasets_folder, get_document_path, path_is_parent
-
-app = FastAPI()
 
 # This regex forbids two consecutive dots so that ../foo does not work
 # to discovery files outside of the document folder
 PATH_REGEX = r"^[a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)*$"
+
+# Variables
+
+app = FastAPI()
+app.state.model_store = ModelStore()
+
+
+# Settings
 
 
 @lru_cache()
@@ -130,12 +137,12 @@ def add_document_to_dataset(
 # Model
 
 
-@app.get("/model", response_model=List[ModelMetaData])
+@app.get("/model", response_model=List[ModelInfo])
 def get_all_model_infos():
     pass
 
 
-@app.get("/model/{model_id}", response_model=ModelMetaData)
+@app.get("/model/{model_id}", response_model=ModelInfo)
 def get_model_info(model_id: str = Path(..., title="Identifier of the model whose info to query")):
     pass
 

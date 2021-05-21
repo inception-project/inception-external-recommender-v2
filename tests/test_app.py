@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 import galahad.app as main
 from galahad import config
 from galahad.app import app
-from galahad.model import Document, DocumentList
+from galahad.dataclasses import Document, DocumentList
 from galahad.util import get_datasets_folder, get_document_path
 
 tmpdir: Optional[Path] = None

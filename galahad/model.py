@@ -1,115 +1,40 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel
-
-Layer = List[Dict[str, Any]]
+from galahad.dataclasses import ModelInfo
 
 
-# Datasets
+class Model:
+    def train(self):
+        raise NotImplementedError()
+
+    def test(self):
+        raise NotImplementedError()
 
 
-class Document(BaseModel):
-    text: str  # Document text
-    version: int  # Version of the document, needs to be monotonically increasing
-    annotations: Dict[
-        str, Layer
-    ]  # The annotations in the document, one dict per type, start and end offsets index into `text`
+class ModelStore:
+    def __init__(self):
+        self._models: Dict[str, Model] = {}
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "text": "Joe waited for the train . The train was late .",
-                "version": 23,
-                "annotations": {
-                    "g.token": [
-                        {"begin": 0, "end": 3},
-                        {"begin": 4, "end": 10},
-                        {"begin": 11, "end": 14},
-                        {"begin": 15, "end": 18},
-                        {"begin": 19, "end": 24},
-                        {"begin": 25, "end": 26},
-                        {"begin": 27, "end": 30},
-                        {"begin": 31, "end": 36},
-                        {"begin": 37, "end": 40},
-                        {"begin": 41, "end": 45},
-                        {"begin": 46, "end": 47},
-                    ],
-                    "g.sentence": [
-                        {"begin": 0, "end": 26},
-                        {"begin": 27, "end": 47},
-                    ],
-                },
-            }
-        }
+    def add_model(self, name: str, model: Model):
+        if name in self._models:
+            raise ValueError(f"Model [{name}] already in model store!")
 
+        self._models[name] = model
 
-class DocumentList(BaseModel):
-    names: List[str]
-    versions: List[int]
+    def get_model_info(self, name: str) -> ModelInfo:
+        """Builds model info for the model given by `name` and returns it.
 
+        Args:
+            name: The name of the model whose info to get.
 
-# Model
+        Returns:
+            The model info of the model named `name`.
+        """
 
-ModelMetaData = Dict[str, Any]
+    def get_model_infos(self) -> List[ModelInfo]:
+        """Builds model infos for all models in this store and returns it.
 
-
-# Training
-
-
-class TrainingRequest(BaseModel):
-    metadata: Dict[str, Any]
-
-
-# Predicting
-
-
-class PredictionRequest(BaseModel):
-    metadata: Dict[str, Any]
-    text: str
-    data: Dict[str, Layer]
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "metadata": {
-                    "token_type": "g.token",
-                    "target_type": "g.ner",
-                    "target_feature": "label",
-                },
-                "text": "Joe waited for the train . The train was late .",
-                "data": {
-                    "g.token": [
-                        {"begin": 0, "end": 3},
-                        {"begin": 4, "end": 10},
-                        {"begin": 11, "end": 14},
-                        {"begin": 15, "end": 18},
-                        {"begin": 19, "end": 24},
-                        {"begin": 25, "end": 26},
-                        {"begin": 27, "end": 30},
-                        {"begin": 31, "end": 36},
-                        {"begin": 37, "end": 40},
-                        {"begin": 41, "end": 45},
-                        {"begin": 46, "end": 47},
-                    ],
-                    "g.sentence": [
-                        {"begin": 0, "end": 26},
-                        {"begin": 27, "end": 47},
-                    ],
-                },
-            }
-        }
-
-
-class PredictionResponse(BaseModel):
-    data: Dict[str, Layer]
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "data": {
-                    "g.ner": [
-                        {"begin": 0, "end": 3},
-                    ]
-                }
-            }
-        }
+        Returns:
+            List of model infos for all stored models.
+        """
+        return [self.get_model_info(name) for name in sorted(self._models.keys())]
