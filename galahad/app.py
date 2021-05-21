@@ -6,7 +6,7 @@ from fastapi import Depends, FastAPI, HTTPException, Path, Response, status
 
 from galahad.config import Settings
 from galahad.model import *
-from galahad.util import path_is_subfolder
+from galahad.util import get_datasets_folder, get_document_path, path_is_parent
 
 app = FastAPI()
 
@@ -41,8 +41,7 @@ def create_dataset(
     settings: Settings = Depends(get_settings),
 ):
     """ Creates a dataset with the given `dataset_id`. Does nothing and returns `409` if it already existed. """
-    dataset_folder = settings.data_dir / dataset_id
-    assert path_is_subfolder(settings.data_dir, dataset_folder)
+    dataset_folder = get_datasets_folder(settings.data_dir, dataset_id)
 
     if dataset_folder.exists():
         raise HTTPException(status_code=409, detail=f"Dataset with id [{dataset_id}] already exists")
@@ -65,8 +64,7 @@ def list_documents_in_dataset(
     settings: Settings = Depends(get_settings),
 ):
     """ Lists documents in the dataset with the given `dataset_id`. """
-    dataset_folder = settings.data_dir / dataset_id
-    assert path_is_subfolder(settings.data_dir, dataset_folder)
+    dataset_folder = get_datasets_folder(settings.data_dir, dataset_id)
 
     if not dataset_folder.is_dir():
         raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found")
@@ -95,8 +93,7 @@ def delete_dataset(
     settings: Settings = Depends(get_settings),
 ):
     """ Deletes the dataset with the given `dataset_id`  and its documents. """
-    dataset_folder = settings.data_dir / dataset_id
-    assert path_is_subfolder(settings.data_dir, dataset_folder)
+    dataset_folder = get_datasets_folder(settings.data_dir, dataset_id)
 
     if not dataset_folder.is_dir():
         raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found")
@@ -118,13 +115,12 @@ def add_document_to_dataset(
     settings: Settings = Depends(get_settings),
 ):
     """ Adds a document to an already existing dataset. Overwrites a document if it already existed. """
-    dataset_folder = settings.data_dir / dataset_id
-    assert path_is_subfolder(settings.data_dir, dataset_folder)
+    dataset_folder = get_datasets_folder(settings.data_dir, dataset_id)
 
     if not dataset_folder.is_dir():
         raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found")
 
-    document_path = dataset_folder / document_id
+    document_path = get_document_path(settings.data_dir, dataset_id, document_id)
     with document_path.open("w", encoding="utf-8") as f:
         f.write(request.json())
 

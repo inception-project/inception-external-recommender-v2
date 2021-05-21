@@ -10,6 +10,7 @@ import galahad.app as main
 from galahad import config
 from galahad.app import app
 from galahad.model import Document, DocumentList
+from galahad.util import get_datasets_folder, get_document_path
 
 tmpdir: Optional[Path] = None
 
@@ -46,14 +47,14 @@ def test_create_dataset_dataset_does_not_exist_already():
     response = client.put("/dataset/test_dataset")
     assert response.status_code == 204
     assert response.text == ""
-    assert (tmpdir / "test_dataset").is_dir()
+    assert get_datasets_folder(tmpdir, "test_dataset").is_dir()
 
 
 def test_create_dataset_dataset_exist_already():
     response = client.put("/dataset/test_dataset")
     assert response.status_code == 204
     assert response.text == ""
-    assert (tmpdir / "test_dataset").is_dir()
+    assert get_datasets_folder(tmpdir, "test_dataset").is_dir()
 
     response = client.put("/dataset/test_dataset")
     assert response.status_code == 409
@@ -91,7 +92,7 @@ def test_list_documents_in_dataset():
         assert response.status_code == 204
         assert response.text == ""
 
-        p = tmpdir / "test_dataset" / name
+        p = get_document_path(tmpdir, "test_dataset", name)
         assert p.is_file()
 
     response = client.get("/dataset/test_dataset")
@@ -111,7 +112,7 @@ def test_delete_dataset_dataset_does_not_exist_already():
 
 
 def test_delete_dataset_dataset_exist_already():
-    p = tmpdir / "test_dataset"
+    p = get_datasets_folder(tmpdir, "test_dataset")
     client.put("/dataset/test_dataset")
     assert p.is_dir()
 
@@ -146,7 +147,7 @@ def test_add_document_to_dataset_document_does_not_exist_already():
     assert response.status_code == 204
     assert response.text == ""
 
-    p = tmpdir / "test_dataset" / "test_document"
+    p = get_document_path(tmpdir, "test_dataset", "test_document")
 
     assert p.is_file()
 
