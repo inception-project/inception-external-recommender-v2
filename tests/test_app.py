@@ -6,35 +6,30 @@ from typing import Optional
 import pytest
 from fastapi.testclient import TestClient
 
-import galahad.app as main
-from galahad import config
-from galahad.app import app
 from galahad.dataclasses import Document, DocumentList
+from galahad.server import GalahadServer
 from galahad.util import get_datasets_folder, get_document_path
 
 tmpdir: Optional[Path] = None
 
 
-@pytest.fixture(autouse=True)
-def build_tmp_dir():
+@pytest.fixture
+def client():
     tmp = TemporaryDirectory()
+
     global tmpdir
     tmpdir = Path(tmp.name)
-    yield
+
+    app = GalahadServer(data_dir=tmpdir)
+
+    yield TestClient(app)
     tmp.cleanup()
 
-
-def get_settings_override():
-    return config.Settings(data_dir=tmpdir)
-
-
-client = TestClient(app)
-app.dependency_overrides[main.get_settings] = get_settings_override
 
 # Test
 
 
-def test_ping():
+def test_ping(client: TestClient):
     response = client.get("/ping")
     assert response.status_code == 200
     assert response.json() == {"ping": "pong"}
@@ -43,14 +38,14 @@ def test_ping():
 # PUT create_dataset
 
 
-def test_create_dataset_dataset_does_not_exist_already():
+def test_create_dataset_dataset_does_not_exist_already(client: TestClient):
     response = client.put("/dataset/test_dataset")
     assert response.status_code == 204
     assert response.text == ""
     assert get_datasets_folder(tmpdir, "test_dataset").is_dir()
 
 
-def test_create_dataset_dataset_exist_already():
+def test_create_dataset_dataset_exist_already(client: TestClient):
     response = client.put("/dataset/test_dataset")
     assert response.status_code == 204
     assert response.text == ""
@@ -64,14 +59,14 @@ def test_create_dataset_dataset_exist_already():
 # GET list_documents_in_dataset
 
 
-def test_list_documents_in_dataset_dataset_does_not_exist_already():
+def test_list_documents_in_dataset_dataset_does_not_exist_already(client: TestClient):
     response = client.get("/dataset/test_dataset")
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Dataset with id [test_dataset] not found"}
 
 
-def test_list_documents_in_dataset():
+def test_list_documents_in_dataset(client: TestClient):
     client.put("/dataset/test_dataset")
 
     expected_names = []
@@ -105,13 +100,13 @@ def test_list_documents_in_dataset():
 # DELETE delete_dataset
 
 
-def test_delete_dataset_dataset_does_not_exist_already():
+def test_delete_dataset_dataset_does_not_exist_already(client: TestClient):
     response = client.delete("/dataset/test_dataset")
     assert response.status_code == 404
     assert response.json() == {"detail": "Dataset with id [test_dataset] not found"}
 
 
-def test_delete_dataset_dataset_exist_already():
+def test_delete_dataset_dataset_exist_already(client: TestClient):
     p = get_datasets_folder(tmpdir, "test_dataset")
     client.put("/dataset/test_dataset")
     assert p.is_dir()
@@ -130,7 +125,7 @@ def test_delete_dataset_dataset_exist_already():
 # PUT add_document_to_dataset
 
 
-def test_add_document_to_dataset_dataset_does_not_exist_already():
+def test_add_document_to_dataset_dataset_does_not_exist_already(client: TestClient):
     request = Document.Config.schema_extra["example"]
 
     response = client.put("/dataset/test_dataset/test_document", json=request)
@@ -138,7 +133,7 @@ def test_add_document_to_dataset_dataset_does_not_exist_already():
     assert response.json() == {"detail": "Dataset with id [test_dataset] not found"}
 
 
-def test_add_document_to_dataset_document_does_not_exist_already():
+def test_add_document_to_dataset_document_does_not_exist_already(client: TestClient):
     client.put("/dataset/test_dataset")
 
     request = Document.Config.schema_extra["example"]
