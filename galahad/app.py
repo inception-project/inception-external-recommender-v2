@@ -1,7 +1,7 @@
 import json
 from functools import lru_cache
 
-from fastapi import Depends, FastAPI, Path, Response, status
+from fastapi import Depends, FastAPI, HTTPException, Path, Response, status
 
 from galahad.config import Settings
 from galahad.model import *
@@ -37,10 +37,43 @@ def create_dataset(
     """ Creates a dataset under the given `dataset_id`. Does nothing and returns `409` if it already existed. """
     dataset_folder = settings.data_dir / dataset_id
     if dataset_folder.exists():
-        return Response(content="", status_code=status.HTTP_409_CONFLICT)
+        raise HTTPException(status_code=409, detail=f"Dataset with id [{dataset_id}] already exists")
     else:
         dataset_folder.mkdir(parents=True)
         return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.get(
+    "/dataset/{dataset_id}",
+    response_model=DocumentList,
+    responses={
+        200: {"description": "Returns list of documents in dataset."},
+        404: {"description": "Dataset not found."},
+    },
+    status_code=200,
+)
+def list_documents_in_dataset(
+    dataset_id: str = Path(..., title="Identifier of the dataset whose documents should be listed"),
+    settings: Settings = Depends(get_settings),
+):
+    dataset_folder = settings.data_dir / dataset_id
+    if not dataset_folder.is_dir():
+        raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found")
+
+    names = []
+    versions = []
+
+    for p in sorted(dataset_folder.iterdir()):
+        document: Document = Document.parse_file(p)
+        names.append(p.name)
+        versions.append(document.version)
+
+    return DocumentList(names=names, versions=versions)
+
+
+@app.delete("/dataset/{dataset_id}")
+def delete_dataset(dataset_id: str = Path(..., title="Identifier of the dataset that should be deleted")):
+    pass
 
 
 @app.put(
@@ -49,7 +82,7 @@ def create_dataset(
     status_code=204,
 )
 def add_document_to_dataset(
-    request: DocumentAddRequest,
+    request: Document,
     dataset_id: str = Path(..., title="Identifier of the dataset to add to"),
     document_id: str = Path(..., title="Identifier of the document to add"),
     settings: Settings = Depends(get_settings),
@@ -57,25 +90,13 @@ def add_document_to_dataset(
     """ Adds a document to an already existing dataset. Overwrites a document if it already existed. """
     dataset_folder = settings.data_dir / dataset_id
     if not dataset_folder.is_dir():
-        return Response(content="", status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found")
 
     document_path = dataset_folder / document_id
     with document_path.open("w", encoding="utf-8") as f:
         f.write(request.json())
 
     return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
-
-
-@app.get("/dataset/{dataset_id}", response_model=DocumentListResponse)
-def list_documents_in_dataset(
-    dataset_id: str = Path(..., title="Identifier of the dataset whose documents should be listed")
-):
-    pass
-
-
-@app.delete("/dataset/{dataset_id}")
-def delete_dataset(dataset_id: str = Path(..., title="Identifier of the dataset that should be deleted")):
-    pass
 
 
 # Model

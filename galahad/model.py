@@ -8,10 +8,9 @@ Layer = List[Dict[str, Any]]
 # Datasets
 
 
-class DocumentAddRequest(BaseModel):
-    name: str  # Name of the document
+class Document(BaseModel):
     text: str  # Document text
-    version: int  # Version of the document, needs to be strictly monotonically increasing
+    version: int  # Version of the document, needs to be monotonically increasing
     annotations: Dict[
         str, Layer
     ]  # The annotations in the document, one dict per type, start and end offsets index into `text`
@@ -19,7 +18,6 @@ class DocumentAddRequest(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "name": "example_doc",
                 "text": "Joe waited for the train . The train was late .",
                 "version": 23,
                 "annotations": {
@@ -45,8 +43,9 @@ class DocumentAddRequest(BaseModel):
         }
 
 
-class DocumentListResponse(BaseModel):
-    documents: List[str]
+class DocumentList(BaseModel):
+    names: List[str]
+    versions: List[int]
 
 
 # Model

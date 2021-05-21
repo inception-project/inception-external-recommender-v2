@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 import galahad.app as main
 from galahad import config
 from galahad.app import app
-from galahad.model import DocumentAddRequest
+from galahad.model import Document, DocumentList
 
 tmpdir: Optional[Path] = None
 
@@ -43,44 +43,85 @@ def test_ping():
 
 
 def test_create_dataset_dataset_does_not_exist_already():
-    response = client.put("/dataset/test_data")
+    response = client.put("/dataset/test_dataset")
     assert response.status_code == 204
     assert response.text == ""
-    assert (tmpdir / "test_data").is_dir()
+    assert (tmpdir / "test_dataset").is_dir()
 
 
 def test_create_dataset_dataset_exist_already():
-    response = client.put("/dataset/test_data")
+    response = client.put("/dataset/test_dataset")
     assert response.status_code == 204
     assert response.text == ""
-    assert (tmpdir / "test_data").is_dir()
+    assert (tmpdir / "test_dataset").is_dir()
 
-    response = client.put("/dataset/test_data")
+    response = client.put("/dataset/test_dataset")
     assert response.status_code == 409
-    assert response.text == ""
+    assert response.json() == {"detail": "Dataset with id [test_dataset] already exists"}
+
+
+# GET list_documents_in_dataset
+
+
+def test_list_documents_in_dataset_dataset_does_not_exist_already():
+    response = client.get("/dataset/test_dataset")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Dataset with id [test_dataset] not found"}
+
+
+def test_list_documents_in_dataset():
+    client.put("/dataset/test_dataset")
+
+    expected_names = []
+    expected_versions = []
+
+    for i in range(3):
+        name = f"test_document{i}"
+        version = i
+
+        expected_names.append(name)
+        expected_versions.append(i)
+
+        request = Document.Config.schema_extra["example"]
+        request["version"] = version
+
+        response = client.put(f"/dataset/test_dataset/{name}", json=request)
+
+        assert response.status_code == 204
+        assert response.text == ""
+
+        p = tmpdir / "test_dataset" / name
+        assert p.is_file()
+
+    response = client.get("/dataset/test_dataset")
+    document_list = DocumentList(**response.json())
+
+    assert document_list.names == expected_names
+    assert document_list.versions == expected_versions
 
 
 # PUT add_document_to_dataset
 
 
 def test_add_document_to_dataset_dataset_does_not_exist_already():
-    request = DocumentAddRequest.Config.schema_extra["example"]
+    request = Document.Config.schema_extra["example"]
 
-    response = client.put("/dataset/test_data/test_document", json=request)
+    response = client.put("/dataset/test_dataset/test_document", json=request)
     assert response.status_code == 404
-    assert response.text == ""
+    assert response.json() == {"detail": "Dataset with id [test_dataset] not found"}
 
 
 def test_add_document_to_dataset_document_does_not_exist_already():
-    client.put("/dataset/test_data")
+    client.put("/dataset/test_dataset")
 
-    request = DocumentAddRequest.Config.schema_extra["example"]
+    request = Document.Config.schema_extra["example"]
 
-    response = client.put("/dataset/test_data/test_document", json=request)
+    response = client.put("/dataset/test_dataset/test_document", json=request)
     assert response.status_code == 204
     assert response.text == ""
 
-    p = tmpdir / "test_data" / "test_document"
+    p = tmpdir / "test_dataset" / "test_document"
 
     assert p.is_file()
 
