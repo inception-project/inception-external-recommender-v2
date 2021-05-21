@@ -1,3 +1,4 @@
+import json
 from functools import lru_cache
 
 from fastapi import Depends, FastAPI, Path, Response, status
@@ -34,21 +35,35 @@ def create_dataset(
     settings: Settings = Depends(get_settings),
 ):
     """ Creates a dataset under the given `dataset_id`. Does nothing and returns `409` if it already existed. """
-    p = settings.data_dir / dataset_id
-    if p.exists():
+    dataset_folder = settings.data_dir / dataset_id
+    if dataset_folder.exists():
         return Response(content="", status_code=status.HTTP_409_CONFLICT)
     else:
-        p.mkdir(parents=True)
+        dataset_folder.mkdir(parents=True)
         return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.put("/dataset/{dataset_id}/{document_id}")
+@app.put(
+    "/dataset/{dataset_id}/{document_id}",
+    responses={204: {"description": "Document added."}, 404: {"description": "Dataset not found."}},
+    status_code=204,
+)
 def add_document_to_dataset(
     request: DocumentAddRequest,
     dataset_id: str = Path(..., title="Identifier of the dataset to add to"),
     document_id: str = Path(..., title="Identifier of the document to add"),
+    settings: Settings = Depends(get_settings),
 ):
-    pass
+    """ Adds a document to an already existing dataset. Overwrites a document if it already existed. """
+    dataset_folder = settings.data_dir / dataset_id
+    if not dataset_folder.is_dir():
+        return Response(content="", status_code=status.HTTP_404_NOT_FOUND)
+
+    document_path = dataset_folder / document_id
+    with document_path.open("w", encoding="utf-8") as f:
+        f.write(request.json())
+
+    return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.get("/dataset/{dataset_id}", response_model=DocumentListResponse)

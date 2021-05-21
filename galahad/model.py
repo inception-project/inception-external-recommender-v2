@@ -9,16 +9,20 @@ Layer = List[Dict[str, Any]]
 
 
 class DocumentAddRequest(BaseModel):
-    name: str
-    text: str
-    data: Dict[str, Layer]
+    name: str  # Name of the document
+    text: str  # Document text
+    version: int  # Version of the document, needs to be strictly monotonically increasing
+    annotations: Dict[
+        str, Layer
+    ]  # The annotations in the document, one dict per type, start and end offsets index into `text`
 
     class Config:
         schema_extra = {
             "example": {
                 "name": "example_doc",
                 "text": "Joe waited for the train . The train was late .",
-                "data": {
+                "version": 23,
+                "annotations": {
                     "g.token": [
                         {"begin": 0, "end": 3},
                         {"begin": 4, "end": 10},
