@@ -1,9 +1,16 @@
 from typing import Any, Dict, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-Layer = List[Dict[str, Any]]
 
+class Annotation(BaseModel):
+    begin: int
+    end: int
+    features: Dict[str, Any] = Field(default_factory=dict)
+
+
+Layer = List[Annotation]
+Layers = Dict[str, Layer]
 
 # Datasets
 
@@ -37,6 +44,9 @@ class Document(BaseModel):
                     "g.sentence": [
                         {"begin": 0, "end": 26},
                         {"begin": 27, "end": 47},
+                    ],
+                    "g.named_entity": [
+                        {"begin": 0, "end": 3, "features": {"label": "PER"}},
                     ],
                 },
             }

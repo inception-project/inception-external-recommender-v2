@@ -1,13 +1,34 @@
+from enum import Enum
 from typing import Dict, List, Optional
 
-from galahad.dataclasses import ClassifierInfo
+from galahad.dataclasses import ClassifierInfo, Document
+
+
+class AnnotationTypes(Enum):
+    TOKEN = "g.token"
+    SENTENCE = "g.sentence"
+    SENTENCE_LABEL = "g.sentence_label"
+
+
+class Remapper:
+    def __init__(self, remaps: Dict[str, str]):
+        self._remaps = remaps
+
+    def remap(self, name: str) -> str:
+        return self._remaps.get(name, name)
 
 
 class Classifier:
-    def train(self):
+    def train(self, documents: List[Document], remapper: Remapper):
         raise NotImplementedError()
 
-    def test(self):
+    def predict(self, remapper: Remapper):
+        raise NotImplementedError()
+
+    def consumes(self) -> List[str]:
+        raise NotImplementedError()
+
+    def produces(self) -> List[str]:
         raise NotImplementedError()
 
 

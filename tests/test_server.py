@@ -34,10 +34,7 @@ def client(server):
 
 @pytest.fixture
 def classifier():
-    class TestClassifier(Classifier):
-        pass
-
-    yield TestClassifier()
+    yield Classifier()
 
 
 # Test
