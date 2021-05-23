@@ -3,9 +3,9 @@ import shutil
 
 from fastapi import FastAPI, HTTPException, Path, Response, status
 
-from galahad.classifier import ClassifierStore
-from galahad.dataclasses import *
-from galahad.util import get_datasets_folder, get_document_path
+from galahad.server.classifier import ClassifierStore
+from galahad.server.dataclasses import *
+from galahad.server.util import get_datasets_folder, get_document_path
 
 # This regex forbids two consecutive dots so that ../foo does not work
 # to discovery files outside of the document folder
@@ -110,7 +110,7 @@ def register_routes(app: FastAPI):
 
         document_path = get_document_path(data_dir, dataset_id, document_id)
         with document_path.open("w", encoding="utf-8") as f:
-            f.write(request.json())
+            f.write(request.json(skip_defaults=True))
 
         return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
 

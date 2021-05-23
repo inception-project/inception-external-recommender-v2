@@ -2,8 +2,8 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-from galahad.classifier import Classifier, ClassifierStore
-from galahad.routes import register_routes
+from galahad.server.classifier import Classifier, ClassifierStore
+from galahad.server.routes import register_routes
 
 
 class GalahadServer(FastAPI):

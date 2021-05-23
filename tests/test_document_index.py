@@ -1,10 +1,8 @@
-from typing import Dict, List
-
 import pytest
 
-from galahad.classifier import AnnotationTypes
-from galahad.dataclasses import Document, Layer, Layers
-from galahad.document_index import DocumentIndex
+from galahad.server.classifier import AnnotationTypes
+from galahad.server.dataclasses import Document, Layers
+from galahad.server.document_index import DocumentIndex
 
 
 @pytest.fixture

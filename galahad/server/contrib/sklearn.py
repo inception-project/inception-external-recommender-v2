@@ -1,7 +1,7 @@
-from typing import Dict, List
+from typing import List
 
-from galahad.classifier import AnnotationTypes, Classifier, Remapper
-from galahad.dataclasses import Document
+from galahad.server.classifier import AnnotationTypes, Classifier, Remapper
+from galahad.server.dataclasses import Document
 
 
 class SklearnSentenceClassifier(Classifier):
@@ -14,10 +14,12 @@ class SklearnSentenceClassifier(Classifier):
         sentence_label_type = remapper.remap(self._sentence_label_type)
 
         sentence_texts = []
+        labels = []
+
         for document in documents:
             for sentence in document.annotations.get(sentence_type):
-                begin = sentence["begin"]
-                end = sentence["end"]
+                begin, end = sentence.begin, sentence.end
+
                 covered_text = document.text[begin:end]
                 sentence_texts.append(covered_text)
 

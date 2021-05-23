@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, List, Optional
 
-from galahad.dataclasses import ClassifierInfo, Document
+from galahad.server.dataclasses import ClassifierInfo, Document
 
 
 class AnnotationTypes(Enum):

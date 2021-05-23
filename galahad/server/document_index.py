@@ -1,9 +1,9 @@
 from collections import defaultdict
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple
 
 from sortedcontainers import SortedKeyList
 
-from galahad.dataclasses import Annotation
+from galahad.server.dataclasses import Annotation
 
 
 class DocumentIndex:

@@ -6,10 +6,10 @@ from typing import Optional
 import pytest
 from fastapi.testclient import TestClient
 
-from galahad.classifier import Classifier
-from galahad.dataclasses import Document, DocumentList
 from galahad.server import GalahadServer
-from galahad.util import get_datasets_folder, get_document_path
+from galahad.server.classifier import Classifier
+from galahad.server.dataclasses import Document, DocumentList
+from galahad.server.util import get_datasets_folder, get_document_path
 
 tmpdir: Optional[Path] = None
 
