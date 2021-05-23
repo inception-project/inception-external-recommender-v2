@@ -7,11 +7,18 @@ from galahad.server.dataclasses import Annotation
 
 
 class DocumentIndex:
-    def __init__(self, annotations: Dict[str, List[Annotation]]):
+    def __init__(self, text: str, annotations: Dict[str, List[Annotation]]):
+        self._text = text
         self._index: Dict[str, SortedKeyList] = defaultdict(lambda: SortedKeyList(key=_sort_func))
 
         for type_name, annotations_for_type in annotations.items():
             self._index[type_name].update(annotations_for_type)
+
+    def get_covered_text(self, annotation: Annotation) -> str:
+        return self._text[annotation.begin : annotation.end]
+
+    def select(self, type_name: str) -> List[Annotation]:
+        return list(self._index[type_name])
 
     def select_covered(self, type_name: str, covering_annotation: Annotation) -> List[Annotation]:
         """Returns a list of covered annotations.
@@ -51,6 +58,10 @@ class DocumentIndex:
         idx_end = annotations.bisect_key_right((end, end))
 
         return annotations[idx_begin:idx_end]
+
+    @property
+    def text(self) -> str:
+        return self._text
 
 
 def _sort_func(a: Annotation) -> Tuple[int, int]:

@@ -2,6 +2,7 @@ from typing import List
 
 from galahad.server.classifier import AnnotationTypes, Classifier, Remapper
 from galahad.server.dataclasses import Document
+from galahad.server.document_index import DocumentIndex
 
 
 class SklearnSentenceClassifier(Classifier):
@@ -17,6 +18,8 @@ class SklearnSentenceClassifier(Classifier):
         labels = []
 
         for document in documents:
+            index = DocumentIndex(document.annotations)
+
             for sentence in document.annotations.get(sentence_type):
                 begin, end = sentence.begin, sentence.end
 
