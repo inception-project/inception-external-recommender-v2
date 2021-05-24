@@ -1,18 +1,42 @@
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from sortedcontainers import SortedKeyList
 
 from galahad.server.dataclasses import Annotation
 
 
-class DocumentIndex:
-    def __init__(self, text: str, annotations: Dict[str, List[Annotation]]):
+class Annotations:
+    def __init__(self, text: str):
         self._text = text
         self._index: Dict[str, SortedKeyList] = defaultdict(lambda: SortedKeyList(key=_sort_func))
 
+    @staticmethod
+    def from_dict(text: str, annotations: Dict[str, List[Annotation]]) -> "Annotations":
+        result = Annotations(text)
+
         for type_name, annotations_for_type in annotations.items():
-            self._index[type_name].update(annotations_for_type)
+            result._index[type_name].update(annotations_for_type)
+
+        return result
+
+    def to_dict(self) -> Dict[str, List[Annotation]]:
+        result = defaultdict(list)
+        for type_name, annotations in self._index.items():
+            for annotation in annotations:
+                result[type_name].append(
+                    {"begin": annotation.begin, "end": annotation.end, "features": annotation.features}
+                )
+
+        return result
+
+    def create_annotation(self, type_name, begin: int, end: int, features: Dict[str, Any] = None) -> Annotation:
+        if features is None:
+            features = {}
+
+        annotation = Annotation(begin=begin, end=end, features=features)
+        self._index[type_name].add(annotation)
+        return annotation
 
     def get_covered_text(self, annotation: Annotation) -> str:
         return self._text[annotation.begin : annotation.end]

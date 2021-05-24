@@ -17,10 +17,10 @@ Layers = Dict[str, Layer]
 
 class Document(BaseModel):
     text: str  # Document text
-    version: int  # Version of the document, needs to be monotonically increasing
     annotations: Dict[
         str, Layer
     ]  # The annotations in the document, one dict per type, start and end offsets index into `text`
+    version: int = Field(default=0)  # Version of the document, needs to be monotonically increasing
 
     class Config:
         schema_extra = {

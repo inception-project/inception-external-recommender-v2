@@ -1,8 +1,8 @@
 import pytest
 
+from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationTypes
 from galahad.server.dataclasses import Document
-from galahad.server.document_index import DocumentIndex
 
 
 @pytest.fixture
@@ -11,7 +11,7 @@ def document() -> Document:
 
 
 def test_get_covered_text(document: Document):
-    index = DocumentIndex(document.text, document.annotations)
+    index = Annotations(document.text, document.annotations)
 
     sentences = index.select(AnnotationTypes.SENTENCE.value)
     first_sentence, second_sentence = sentences
@@ -30,14 +30,14 @@ def test_get_covered_text(document: Document):
 
 
 def test_select(document: Document):
-    index = DocumentIndex(document.text, document.annotations)
+    index = Annotations(document.text, document.annotations)
 
     assert len(index.select(AnnotationTypes.SENTENCE.value)) == 2
     assert len(index.select(AnnotationTypes.TOKEN.value)) == 11
 
 
 def test_select_covered(document: Document):
-    index = DocumentIndex(document.text, document.annotations)
+    index = Annotations(document.text, document.annotations)
 
     token_type = AnnotationTypes.TOKEN.value
     sentence_type = AnnotationTypes.SENTENCE.value
