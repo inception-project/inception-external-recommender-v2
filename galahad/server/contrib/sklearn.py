@@ -1,11 +1,12 @@
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 
+from galahad.client.formats import build_sentence_classification_document
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import (AnnotationFeatures, AnnotationTypes,
                                        Classifier, Remapper)
@@ -15,28 +16,24 @@ logger = logging.getLogger(__name__)
 
 
 class SklearnSentenceClassifier(Classifier):
-    def __init__(self, model_directory: Path):
-        super().__init__(model_directory)
+    def __init__(self):
+        super().__init__()
 
         self._sentence_type = AnnotationTypes.SENTENCE.value
         self._sentence_annotation_type = AnnotationTypes.SENTENCE_ANNOTATION.value
         self._target_feature = AnnotationFeatures.VALUE.value
 
-    def train(self, model_id: str, documents: List[Document], remapper: Remapper):
-        sentence_type = remapper.remap(self._sentence_type)
-        sentence_annotation_type = remapper.remap(self._sentence_annotation_type)
-        target_feature = remapper.remap(self._target_feature)
-
+    def train(self, model_id: str, documents: List[Document]):
         texts = []
         labels = []
 
         for document in documents:
-            index = Annotations(document.text, document.annotations)
+            annotations = Annotations.from_dict(document.text, document.annotations)
 
-            for sentence in index.select(sentence_type):
-                for sentence_label in index.select_covered(sentence_annotation_type, sentence):
-                    text = index.get_covered_text(sentence_label)
-                    label = sentence_label.features.get(target_feature)
+            for sentence in annotations.select(self._sentence_type):
+                for sentence_label in annotations.select_covered(self._sentence_annotation_type, sentence):
+                    text = annotations.get_covered_text(sentence_label)
+                    label = sentence_label.features.get(self._target_feature)
 
                     if label is None:
                         continue
@@ -51,8 +48,18 @@ class SklearnSentenceClassifier(Classifier):
 
         self._save_model(model_id, model)
 
-    def predict(self, model_id: str, remapper: Remapper):
-        pass
+    def predict(self, model_id: str, document: Document) -> Optional[Document]:
+        model: Optional[Pipeline] = self._load_model(model_id)
+
+        if model is None:
+            logger.debug("No trained model ready yet!")
+            return
+
+        annotations = Annotations.from_dict(document.text, document.annotations)
+        texts = [annotations.get_covered_text(sentence) for sentence in annotations.select(self._sentence_type)]
+        predicted_labels = model.predict(texts)
+
+        return build_sentence_classification_document(texts, predicted_labels)
 
     def consumes(self) -> List[str]:
         return [self._sentence_type, self._sentence_annotation_type]

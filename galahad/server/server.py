@@ -14,7 +14,7 @@ class GalahadServer(FastAPI):
             data_dir = Path(__file__).resolve().parents[1]
 
         self._data_dir = data_dir
-        self._classifier_store = ClassifierStore()
+        self._classifier_store = ClassifierStore(data_dir / "models")
 
         self.state.data_dir = self._data_dir
         self.state.classifier_store = self._classifier_store

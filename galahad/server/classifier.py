@@ -1,3 +1,4 @@
+import logging
 import os
 from enum import Enum
 from pathlib import Path
@@ -6,6 +7,8 @@ from typing import Any, Dict, List, Optional
 import joblib
 
 from galahad.server.dataclasses import ClassifierInfo, Document
+
+logger = logging.getLogger(__file__)
 
 
 class AnnotationTypes(Enum):
@@ -19,7 +22,10 @@ class AnnotationFeatures(Enum):
 
 
 class Remapper:
-    def __init__(self, remaps: Dict[str, str]):
+    def __init__(self, remaps: Dict[str, str] = None):
+        if remaps is None:
+            remaps = {}
+
         self._remaps = remaps
 
     def remap(self, name: str) -> str:
@@ -27,13 +33,13 @@ class Remapper:
 
 
 class Classifier:
-    def __init__(self, model_directory: Path = None):
-        self._model_directory = model_directory
+    def __init__(self):
+        self._model_directory: Optional[Path] = None
 
-    def train(self, model_id: str, documents: List[Document], remapper: Remapper):
+    def train(self, model_id: str, documents: List[Document]):
         raise NotImplementedError()
 
-    def predict(self, model_id: str, remapper: Remapper):
+    def predict(self, model_id: str, document: Document) -> Optional[Document]:
         raise NotImplementedError()
 
     def consumes(self) -> List[str]:
@@ -43,6 +49,8 @@ class Classifier:
         raise NotImplementedError()
 
     def _save_model(self, model_id: str, model: Any):
+        assert self._model_directory is not None, "You need to set `self._model_directory` first before saving!"
+
         model_path = self._get_model_path(model_id)
         model_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -51,8 +59,17 @@ class Classifier:
 
         os.replace(tmp_model_path, model_path)
 
-    def _get_model_path(self, user_id: str) -> Path:
-        return self._model_directory / self.name / f"model_{user_id}.joblib"
+    def _load_model(self, model_id: str) -> Optional[Any]:
+        model_path = self._get_model_path(model_id)
+        if model_path.is_file():
+            logger.debug("Model found for [%s]", model_path)
+            return joblib.load(model_path)
+        else:
+            logger.debug("No model found for [%s]", model_path)
+            return None
+
+    def _get_model_path(self, model_id: str) -> Path:
+        return self._model_directory / self.name / f"model_{model_id}.joblib"
 
     @property
     def name(self) -> str:

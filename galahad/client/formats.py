@@ -5,7 +5,7 @@ from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
 from galahad.server.dataclasses import Document
 
 
-def build_sentence_classification_request(sentences: List[str], labels: List[str], version: int = 0) -> Document:
+def build_sentence_classification_document(sentences: List[str], labels: List[str], version: int = 0) -> Document:
     assert len(sentences) == len(labels), "Sentences and labels need to have the same length!"
 
     text = " ".join(sentences)

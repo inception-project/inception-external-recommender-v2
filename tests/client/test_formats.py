@@ -1,5 +1,4 @@
-from galahad.client.formats import build_sentence_classification_request
-from galahad.server.annotations import Annotations
+from galahad.client.formats import build_sentence_classification_document
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
 
 
@@ -7,7 +6,7 @@ def test_build_sentence_classification_request():
     sentences = ["John likes ice cream", "John hates chocolate."]
     labels = ["positive", "negative"]
 
-    result = build_sentence_classification_request(sentences, labels)
+    result = build_sentence_classification_document(sentences, labels)
 
     # Check sentences
     actual_sentences = result.annotations[AnnotationTypes.SENTENCE.value]

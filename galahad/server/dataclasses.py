@@ -28,7 +28,7 @@ class Document(BaseModel):
                 "text": "Joe waited for the train . The train was late .",
                 "version": 23,
                 "annotations": {
-                    "g.token": [
+                    "t.token": [
                         {"begin": 0, "end": 3},
                         {"begin": 4, "end": 10},
                         {"begin": 11, "end": 14},
@@ -41,12 +41,12 @@ class Document(BaseModel):
                         {"begin": 41, "end": 45},
                         {"begin": 46, "end": 47},
                     ],
-                    "g.sentence": [
+                    "t.sentence": [
                         {"begin": 0, "end": 26},
                         {"begin": 27, "end": 47},
                     ],
-                    "g.named_entity": [
-                        {"begin": 0, "end": 3, "features": {"label": "PER"}},
+                    "t.named_entity": [
+                        {"begin": 0, "end": 3, "features": {"f.value": "PER"}},
                     ],
                 },
             }
