@@ -1,5 +1,6 @@
 import pathlib
 import shutil
+from concurrent.futures import ProcessPoolExecutor
 
 from fastapi import FastAPI, HTTPException, Path, Response, status
 
@@ -26,8 +27,11 @@ def register_routes(app: FastAPI):
 
     @app.put(
         "/dataset/{dataset_id}",
-        responses={204: {"description": "Dataset created."}, 409: {"description": "Dataset already exists."}},
-        status_code=204,
+        responses={
+            status.HTTP_204_NO_CONTENT: {"description": "Dataset created."},
+            status.HTTP_409_CONFLICT: {"description": "Dataset already exists."},
+        },
+        status_code=status.HTTP_204_NO_CONTENT,
     )
     def create_dataset(
         dataset_id: str = Path(..., title="Identifier of the dataset that should be created", regex=PATH_REGEX),
@@ -36,7 +40,9 @@ def register_routes(app: FastAPI):
         dataset_folder = get_datasets_folder(data_dir, dataset_id)
 
         if dataset_folder.exists():
-            raise HTTPException(status_code=409, detail=f"Dataset with id [{dataset_id}] already exists.")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail=f"Dataset with id [{dataset_id}] already exists."
+            )
 
         dataset_folder.mkdir(parents=True)
         return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
@@ -45,10 +51,10 @@ def register_routes(app: FastAPI):
         "/dataset/{dataset_id}",
         response_model=DocumentList,
         responses={
-            200: {"description": "Returns list of documents in dataset."},
-            404: {"description": "Dataset not found."},
+            status.HTTP_200_OK: {"description": "Returns list of documents in dataset."},
+            status.HTTP_404_NOT_FOUND: {"description": "Dataset not found."},
         },
-        status_code=200,
+        status_code=status.HTTP_200_OK,
     )
     def list_documents_in_dataset(
         dataset_id: str = Path(
@@ -59,7 +65,9 @@ def register_routes(app: FastAPI):
         dataset_folder = get_datasets_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
-            raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Dataset with id [{dataset_id}] not found."
+            )
 
         names = []
         versions = []
@@ -74,10 +82,10 @@ def register_routes(app: FastAPI):
     @app.delete(
         "/dataset/{dataset_id}",
         responses={
-            204: {"description": "Dataset deleted."},
-            404: {"description": "Dataset not found."},
+            status.HTTP_204_NO_CONTENT: {"description": "Dataset deleted."},
+            status.HTTP_404_NOT_FOUND: {"description": "Dataset not found."},
         },
-        status_code=204,
+        status_code=status.HTTP_204_NO_CONTENT,
     )
     def delete_dataset(
         dataset_id: str = Path(..., title="Identifier of the dataset that should be deleted", regex=PATH_REGEX),
@@ -86,7 +94,9 @@ def register_routes(app: FastAPI):
         dataset_folder = get_datasets_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
-            raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Dataset with id [{dataset_id}] not found."
+            )
 
         shutil.rmtree(dataset_folder)
 
@@ -94,8 +104,11 @@ def register_routes(app: FastAPI):
 
     @app.put(
         "/dataset/{dataset_id}/{document_id}",
-        responses={204: {"description": "Document added."}, 404: {"description": "Dataset not found."}},
-        status_code=204,
+        responses={
+            status.HTTP_204_NO_CONTENT: {"description": "Document added."},
+            status.HTTP_404_NOT_FOUND: {"description": "Dataset not found."},
+        },
+        status_code=status.HTTP_204_NO_CONTENT,
     )
     def add_document_to_dataset(
         request: Document,
@@ -106,7 +119,9 @@ def register_routes(app: FastAPI):
         dataset_folder = get_datasets_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
-            raise HTTPException(status_code=404, detail=f"Dataset with id [{dataset_id}] not found.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Dataset with id [{dataset_id}] not found."
+            )
 
         document_path = get_document_path(data_dir, dataset_id, document_id)
         with document_path.open("w", encoding="utf-8") as f:
@@ -120,9 +135,9 @@ def register_routes(app: FastAPI):
         "/classifier",
         response_model=List[ClassifierInfo],
         responses={
-            200: {"description": "Returns list of documents in dataset."},
+            status.HTTP_200_OK: {"description": "Returns list of documents in dataset."},
         },
-        status_code=200,
+        status_code=status.HTTP_200_OK,
     )
     def get_all_classifier_infos():
         """ Gets the classifier info for all classifiers managed by this server. """
@@ -132,17 +147,19 @@ def register_routes(app: FastAPI):
         "/classifier/{classifier_id}",
         response_model=ClassifierInfo,
         responses={
-            200: {"description": "Returns the classifier info of the requested classifier."},
-            404: {"description": "Classifier not found."},
+            status.HTTP_200_OK: {"description": "Returns the classifier info of the requested classifier."},
+            status.HTTP_404_NOT_FOUND: {"description": "Classifier not found."},
         },
-        status_code=200,
+        status_code=status.HTTP_200_OK,
     )
     def get_classifier_info(classifier_id: str = Path(..., title="Identifier of the classifier whose info to query")):
         """ Gets the classifier info for the requested classifier id if it exists. """
         classifier_info = classifier_store.get_classifier_info(classifier_id)
 
         if classifier_info is None:
-            raise HTTPException(status_code=404, detail=f"Classifier with id [{classifier_id}] not found.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Classifier with id [{classifier_id}] not found."
+            )
 
         return classifier_info
 
@@ -175,3 +192,13 @@ def register_routes(app: FastAPI):
         ),
     ):
         return {"classifier_id": classifier_id, "dataset_id": dataset_id, "document_id": document_id}
+
+    # https://stackoverflow.com/questions/63169865/how-to-do-multiprocessing-in-fastapi
+
+    @app.on_event("startup")
+    async def startup_event():
+        app.state.executor = ProcessPoolExecutor()
+
+    @app.on_event("shutdown")
+    async def on_shutdown():
+        app.state.executor.shutdown()
