@@ -5,7 +5,7 @@ from datasets import load_dataset
 
 from galahad.client.formats import build_sentence_classification_document
 from galahad.server.annotations import Annotations
-from galahad.server.contrib.sklearn import SklearnSentenceClassifier
+from galahad.server.contrib.sentence_classification.sklearn_sentence_classifier import SklearnSentenceClassifier
 
 
 def test_sklearn_sentence_classifier_train_predict(tmpdir):
