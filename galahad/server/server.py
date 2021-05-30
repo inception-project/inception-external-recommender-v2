@@ -1,14 +1,10 @@
 import asyncio
 import pathlib
 import shutil
-from asyncio import Condition
 from concurrent.futures import ProcessPoolExecutor
-from multiprocessing import Value
-from pathlib import Path
 from typing import Callable
 
 from fastapi import FastAPI, HTTPException, Path, Response, status
-from filelock import FileLock, SoftFileLock, Timeout
 from starlette.background import BackgroundTasks
 
 from galahad.server.classifier import (Classifier, ClassifierStore,
@@ -22,11 +18,11 @@ PATH_REGEX = r"^[a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)*$"
 
 
 class GalahadServer(FastAPI):
-    def __init__(self, title: str = "Galahad Server", data_dir: Path = None) -> None:
+    def __init__(self, title: str = "Galahad Server", data_dir: pathlib.Path = None) -> None:
         super().__init__(title=title)
 
         if data_dir is None:
-            data_dir = Path(__file__).resolve().parents[1]
+            data_dir = pathlib.Path(__file__).resolve().parents[1]
 
         self._classifier_store = ClassifierStore(data_dir / "models")
 
