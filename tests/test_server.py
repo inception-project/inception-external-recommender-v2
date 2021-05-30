@@ -10,6 +10,7 @@ from galahad.server import GalahadServer
 from galahad.server.classifier import Classifier
 from galahad.server.dataclasses import Document, DocumentList
 from galahad.server.util import get_datasets_folder, get_document_path
+from tests.fixtures import TestClassifier
 
 tmpdir: Optional[Path] = None
 
@@ -34,7 +35,7 @@ def client(server):
 
 @pytest.fixture
 def classifier():
-    yield Classifier()
+    yield TestClassifier()
 
 
 # Test
@@ -211,3 +212,48 @@ def test_get_classifier_when_classifier_does_not_exist(
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Classifier with id [test_classifier] not found."}
+
+
+# POST train_on_dataset
+
+
+def test_train_on_dataset(server: GalahadServer, client: TestClient, classifier: Classifier):
+    with client:
+        # Add classifier
+        server.add_classifier("test_classifier", classifier)
+
+        # Add dataset
+        client.put("/dataset/test_dataset")
+        request = Document.Config.schema_extra["example"]
+        response = client.put("/dataset/test_dataset/test_document", json=request)
+        assert response.status_code == 204
+
+        response = client.post("/classifier/test_classifier/train/test_dataset")
+        assert response.status_code == 202
+        assert response.text == ""
+
+        model_id = "test_classifier_test_dataset"
+        model_path = classifier._get_model_path(model_id)
+
+        # Wait for training to finish
+        server.state.executor.shutdown()
+
+        assert model_path.is_file()
+
+
+def test_train_on_dataset_when_classifier_does_not_exist(client: TestClient):
+    response = client.post("/classifier/test_classifier/train/test_dataset")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Classifier with id [test_classifier] not found."}
+
+
+def test_train_on_dataset_when_dataset_does_not_exist(
+    server: GalahadServer, client: TestClient, classifier: Classifier
+):
+    server.add_classifier("test_classifier", classifier)
+
+    response = client.post("/classifier/test_classifier/train/test_dataset")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Dataset with id [test_dataset] not found."}

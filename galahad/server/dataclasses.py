@@ -41,13 +41,8 @@ class Document(BaseModel):
                         {"begin": 41, "end": 45},
                         {"begin": 46, "end": 47},
                     ],
-                    "t.sentence": [
-                        {"begin": 0, "end": 26},
-                        {"begin": 27, "end": 47},
-                    ],
-                    "t.named_entity": [
-                        {"begin": 0, "end": 3, "features": {"f.value": "PER"}},
-                    ],
+                    "t.sentence": [{"begin": 0, "end": 26}, {"begin": 27, "end": 47},],
+                    "t.named_entity": [{"begin": 0, "end": 3, "features": {"f.value": "PER"}},],
                 },
             }
         }
@@ -91,11 +86,7 @@ class PredictionRequest(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "metadata": {
-                    "token_type": "g.token",
-                    "target_type": "g.ner",
-                    "target_feature": "label",
-                },
+                "metadata": {"token_type": "g.token", "target_type": "g.ner", "target_feature": "label",},
                 "text": "Joe waited for the train . The train was late .",
                 "data": {
                     "g.token": [
@@ -111,10 +102,7 @@ class PredictionRequest(BaseModel):
                         {"begin": 41, "end": 45},
                         {"begin": 46, "end": 47},
                     ],
-                    "g.sentence": [
-                        {"begin": 0, "end": 26},
-                        {"begin": 27, "end": 47},
-                    ],
+                    "g.sentence": [{"begin": 0, "end": 26}, {"begin": 27, "end": 47},],
                 },
             }
         }
@@ -124,12 +112,4 @@ class PredictionResponse(BaseModel):
     data: Dict[str, Layer]
 
     class Config:
-        schema_extra = {
-            "example": {
-                "data": {
-                    "g.ner": [
-                        {"begin": 0, "end": 3},
-                    ]
-                }
-            }
-        }
+        schema_extra = {"example": {"data": {"g.ner": [{"begin": 0, "end": 3},]}}}

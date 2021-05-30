@@ -1,6 +1,7 @@
-fastapi=~0.63.*
-uvicorn[standard]=~0.13.*
-pydantic=~1.8.*
-sortedcontainers>=~2.4.*
-joblib=~1.0.*
-datasets=~1.6.*
+fastapi==0.63.*
+uvicorn[standard]==0.13.*
+pydantic==1.8.*
+sortedcontainers>==2.4.*
+joblib==1.0.*
+datasets==1.6.*
+pytest
