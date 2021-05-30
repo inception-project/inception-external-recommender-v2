@@ -207,7 +207,7 @@ def _register_routes(app: FastAPI):
     # Train
 
     @app.post(
-        "/classifier/{classifier_id}/train/{dataset_id}",
+        "/classifier/{classifier_id}/{model_id}/train/{dataset_id}",
         responses={
             status.HTTP_202_ACCEPTED: {"description": "Training started."},
             status.HTTP_404_NOT_FOUND: {"description": "Classifier or dataset not found."},
@@ -216,7 +216,8 @@ def _register_routes(app: FastAPI):
     )
     def train_on_dataset(
         background_tasks: BackgroundTasks,
-        classifier_id: str = Path(..., title="Identifier of the model that should be trained"),
+        classifier_id: str = Path(..., title="Name of the classifier that should be trained."),
+        model_id: str = Path(..., title="Name of the model that should be trained."),
         dataset_id: str = Path(
             ..., title="Identifier of the dataset that should be used for training", regex=PATH_REGEX
         ),
@@ -233,8 +234,6 @@ def _register_routes(app: FastAPI):
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Dataset with id [{dataset_id}] not found."
             )
 
-        model_id = classifier_id + "_" + dataset_id
-
         background_tasks.add_task(
             run_in_different_process, train_classifier, classifier, dataset_folder, model_id, lock_directory
         )
@@ -243,14 +242,32 @@ def _register_routes(app: FastAPI):
 
     # Prediction
 
-    @app.post("/model/{classifier_id}/predict", response_model=PredictionResponse)
+    @app.post(
+        "/classifier/{classifier_id}/{model_id}/predict",
+        response_model=Document,
+        responses={
+            status.HTTP_200_OK: {"description": "Prediction successful."},
+            status.HTTP_404_NOT_FOUND: {"description": "Classifier or model not found."},
+        },
+    )
     def predict_for_document(
-        request: PredictionRequest,
-        classifier_id: str = Path(..., title="Identifier of the model that should be used for prediction"),
+        request: Document,
+        classifier_id: str = Path(..., title="Name of the classifier that should be used for prediction"),
+        model_id: str = Path(..., title="Identifier of the model that should be used for prediction"),
     ):
-        return {"classifier_id": classifier_id}
+        classifier = classifier_store.get_classifier(classifier_id)
+        if classifier is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Classifier with id [{classifier_id}] not found."
+            )
 
-    @app.post("/model/{classifier_id}/predict/{dataset_id}/{document_id}")
+        result = classifier.predict(model_id, request)
+        if result is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Model with id [{model_id}] not found.")
+
+        return result
+
+    @app.post("/classifier/{classifier_id}/{model_id}/predict/{dataset_id}/{document_id}")
     def predict_on_dataset(
         classifier_id: str = Path(..., title="Identifier of the model that should be used for prediction"),
         dataset_id: str = Path(..., title="Identifier of the dataset that should be used for prediction"),

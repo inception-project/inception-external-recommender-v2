@@ -9,4 +9,5 @@ class TestClassifier(Classifier):
         self._save_model(model_id, [d.json() for d in documents])
 
     def predict(self, model_id: str, document: Document) -> Optional[Document]:
-        pass
+        model = self._load_model(model_id)
+        return document if model else None

@@ -228,12 +228,11 @@ def test_train_on_dataset(server: GalahadServer, client: TestClient, classifier:
         response = client.put("/dataset/test_dataset/test_document", json=request)
         assert response.status_code == 204
 
-        response = client.post("/classifier/test_classifier/train/test_dataset")
+        response = client.post("/classifier/test_classifier/test_model/train/test_dataset")
         assert response.status_code == 202
         assert response.text == ""
 
-        model_id = "test_classifier_test_dataset"
-        model_path = classifier._get_model_path(model_id)
+        model_path = classifier._get_model_path("test_model")
 
         # Wait for training to finish
         server.state.executor.shutdown()
@@ -242,7 +241,7 @@ def test_train_on_dataset(server: GalahadServer, client: TestClient, classifier:
 
 
 def test_train_on_dataset_when_classifier_does_not_exist(client: TestClient):
-    response = client.post("/classifier/test_classifier/train/test_dataset")
+    response = client.post("/classifier/test_classifier/test_model/train/test_dataset")
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Classifier with id [test_classifier] not found."}
@@ -253,7 +252,40 @@ def test_train_on_dataset_when_dataset_does_not_exist(
 ):
     server.add_classifier("test_classifier", classifier)
 
-    response = client.post("/classifier/test_classifier/train/test_dataset")
+    response = client.post("/classifier/test_classifier/test_model/train/test_dataset")
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Dataset with id [test_dataset] not found."}
+
+
+# POST predict_on_document
+
+
+def test_predict_on_document(server: GalahadServer, client: TestClient, classifier: Classifier):
+    test_train_on_dataset(server, client, classifier)
+
+    request = Document(**Document.Config.schema_extra["example"])
+    response = client.post("/classifier/test_classifier/test_model/predict", json=request.dict())
+
+    assert response.status_code == 200
+    assert response.json() == request.dict()
+
+
+def test_predict_on_document_when_classifier_does_not_exist(client: TestClient):
+    request = Document.Config.schema_extra["example"]
+    response = client.post("/classifier/test_classifier/test_model/predict", json=request)
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Classifier with id [test_classifier] not found."}
+
+
+def test_predict_on_document_when_model_does_not_exist(
+    server: GalahadServer, client: TestClient, classifier: Classifier
+):
+    server.add_classifier("test_classifier", classifier)
+
+    request = Document.Config.schema_extra["example"]
+    response = client.post("/classifier/test_classifier/test_model/predict", json=request)
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Model with id [test_model] not found."}
