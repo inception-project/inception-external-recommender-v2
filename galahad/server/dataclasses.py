@@ -12,6 +12,7 @@ class Annotation(BaseModel):
 Layer = List[Annotation]
 Layers = Dict[str, Layer]
 
+
 # Datasets
 
 
@@ -86,10 +87,10 @@ class PredictionRequest(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "metadata": {"token_type": "g.token", "target_type": "g.ner", "target_feature": "label",},
+                "metadata": {"token_type": "t.token", "target_type": "t.ner", "target_feature": "label",},
                 "text": "Joe waited for the train . The train was late .",
                 "data": {
-                    "g.token": [
+                    "t.token": [
                         {"begin": 0, "end": 3},
                         {"begin": 4, "end": 10},
                         {"begin": 11, "end": 14},
@@ -102,7 +103,7 @@ class PredictionRequest(BaseModel):
                         {"begin": 41, "end": 45},
                         {"begin": 46, "end": 47},
                     ],
-                    "g.sentence": [{"begin": 0, "end": 26}, {"begin": 27, "end": 47},],
+                    "t.sentence": [{"begin": 0, "end": 26}, {"begin": 27, "end": 47},],
                 },
             }
         }
@@ -112,4 +113,4 @@ class PredictionResponse(BaseModel):
     data: Dict[str, Layer]
 
     class Config:
-        schema_extra = {"example": {"data": {"g.ner": [{"begin": 0, "end": 3},]}}}
+        schema_extra = {"example": {"data": {"t.ner": [{"begin": 0, "end": 3},]}}}
