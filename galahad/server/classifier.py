@@ -40,7 +40,7 @@ class Classifier:
         self._model_directory: Optional[Path] = None
 
     def train(self, model_id: str, documents: List[Document]):
-        raise NotImplementedError()
+        pass
 
     def predict(self, model_id: str, document: Document) -> Optional[Document]:
         raise NotImplementedError()
