@@ -17,6 +17,7 @@ class AnnotationTypes(Enum):
     TOKEN = "t.token"
     SENTENCE = "t.sentence"
     SENTENCE_ANNOTATION = "t.sentence_annotation"
+    SPAN_ANNOTATION = "t.span_annotation"
 
 
 class AnnotationFeatures(Enum):
