@@ -6,5 +6,4 @@ from galahad.server.contrib.sentence_classification.sklearn_sentence_classifier 
 app = GalahadServer()
 app.add_classifier("sklearn1", SklearnSentenceClassifier())
 app.add_classifier("sklearn2", SklearnSentenceClassifier())
-app.add_classifier("spacy_ner", SpacyNerClassifier("en_core_web_sm")
-)
+app.add_classifier("spacy_ner", SpacyNerClassifier("en_core_web_sm"))
