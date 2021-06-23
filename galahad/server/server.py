@@ -25,6 +25,10 @@ class GalahadServer(FastAPI):
         if data_dir is None:
             data_dir = pathlib.Path(__file__).resolve().parents[1]
 
+        data_dir.mkdir(exist_ok=True, parents=True)
+        get_datasets_folder(data_dir).mkdir(exist_ok=True, parents=True)
+        get_datasets_folder(data_dir).mkdir(exist_ok=True, parents=True)
+
         self._classifier_store = ClassifierStore(data_dir / "models")
 
         self.state.data_dir = data_dir
