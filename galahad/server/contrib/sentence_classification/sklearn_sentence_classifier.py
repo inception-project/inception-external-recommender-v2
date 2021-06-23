@@ -41,6 +41,10 @@ class SklearnSentenceClassifier(Classifier):
                     texts.append(text)
                     labels.append(label)
 
+        assert len(texts) == len(labels), "Unequal number of sentences and labels"
+        if not len(texts):
+            logger.debug(f"Empty training set, skipping!")
+
         model = Pipeline([("vect", CountVectorizer()), ("tfidf", TfidfTransformer()), ("clf", MultinomialNB())])
         model.fit(texts, labels)
 
