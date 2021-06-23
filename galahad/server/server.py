@@ -10,7 +10,8 @@ from starlette.background import BackgroundTasks
 from galahad.server.classifier import (Classifier, ClassifierStore,
                                        train_classifier)
 from galahad.server.dataclasses import *
-from galahad.server.util import get_datasets_folder, get_document_path
+from galahad.server.util import (get_dataset_folder, get_datasets_folder,
+                                 get_document_path)
 
 # This regex forbids two consecutive dots so that ../foo does not work
 # to discovery files outside of the document folder
@@ -76,7 +77,7 @@ def _register_routes(app: FastAPI):
         dataset_id: str = Path(..., title="Identifier of the dataset that should be created", regex=PATH_REGEX),
     ):
         """ Creates a dataset with the given `dataset_id`. Does nothing and returns `409` if it already existed. """
-        dataset_folder = get_datasets_folder(data_dir, dataset_id)
+        dataset_folder = get_dataset_folder(data_dir, dataset_id)
 
         if dataset_folder.exists():
             raise HTTPException(
@@ -101,7 +102,7 @@ def _register_routes(app: FastAPI):
         ),
     ):
         """ Lists documents in the dataset with the given `dataset_id`. """
-        dataset_folder = get_datasets_folder(data_dir, dataset_id)
+        dataset_folder = get_dataset_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
             raise HTTPException(
@@ -130,7 +131,7 @@ def _register_routes(app: FastAPI):
         dataset_id: str = Path(..., title="Identifier of the dataset that should be deleted", regex=PATH_REGEX),
     ):
         """ Deletes the dataset with the given `dataset_id`  and its documents. """
-        dataset_folder = get_datasets_folder(data_dir, dataset_id)
+        dataset_folder = get_dataset_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
             raise HTTPException(
@@ -155,7 +156,7 @@ def _register_routes(app: FastAPI):
         document_id: str = Path(..., title="Identifier of the document to add", regex=PATH_REGEX),
     ):
         """ Adds a document to an already existing dataset. Overwrites a document if it already existed. """
-        dataset_folder = get_datasets_folder(data_dir, dataset_id)
+        dataset_folder = get_dataset_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
             raise HTTPException(
@@ -224,7 +225,7 @@ def _register_routes(app: FastAPI):
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Classifier with id [{classifier_id}] not found."
             )
 
-        dataset_folder = get_datasets_folder(data_dir, dataset_id)
+        dataset_folder = get_dataset_folder(data_dir, dataset_id)
         if not dataset_folder.is_dir():
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Dataset with id [{dataset_id}] not found."

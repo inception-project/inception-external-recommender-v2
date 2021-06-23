@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from galahad.server import GalahadServer
 from galahad.server.classifier import Classifier
 from galahad.server.dataclasses import Document, DocumentList
-from galahad.server.util import get_datasets_folder, get_document_path
+from galahad.server.util import get_dataset_folder, get_document_path
 from tests.fixtures import TestClassifier
 
 tmpdir: Optional[Path] = None
@@ -47,6 +47,23 @@ def test_ping(client: TestClient):
     assert response.json() == {"ping": "pong"}
 
 
+# PUT list_datasets
+
+
+def test_list_datasets(client: TestClient):
+    expected_dataset_names = [f"test_dataset{i+1}" for i in range(3)]
+
+    for name in expected_dataset_names:
+        response = client.put(f"/dataset/{name}")
+        assert response.status_code == 204
+        assert response.text == ""
+        assert get_dataset_folder(tmpdir, name).is_dir()
+
+    response = client.get("/dataset")
+    assert response.status_code == 200
+    assert response.json() == {"names": expected_dataset_names}
+
+
 # PUT create_dataset
 
 
@@ -54,14 +71,14 @@ def test_create_dataset_when_dataset_does_not_already_exist(client: TestClient):
     response = client.put("/dataset/test_dataset")
     assert response.status_code == 204
     assert response.text == ""
-    assert get_datasets_folder(tmpdir, "test_dataset").is_dir()
+    assert get_dataset_folder(tmpdir, "test_dataset").is_dir()
 
 
 def test_create_dataset_when_dataset_exist_already(client: TestClient):
     response = client.put("/dataset/test_dataset")
     assert response.status_code == 204
     assert response.text == ""
-    assert get_datasets_folder(tmpdir, "test_dataset").is_dir()
+    assert get_dataset_folder(tmpdir, "test_dataset").is_dir()
 
     response = client.put("/dataset/test_dataset")
     assert response.status_code == 409
@@ -119,7 +136,7 @@ def test_delete_dataset_when_dataset_does_not_already_exist(client: TestClient):
 
 
 def test_delete_dataset_when_dataset_exist_already(client: TestClient):
-    p = get_datasets_folder(tmpdir, "test_dataset")
+    p = get_dataset_folder(tmpdir, "test_dataset")
     client.put("/dataset/test_dataset")
     assert p.is_dir()
 

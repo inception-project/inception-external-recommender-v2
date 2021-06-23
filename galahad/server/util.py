@@ -1,14 +1,20 @@
 from pathlib import Path
 
 
-def get_datasets_folder(data_dir: Path, dataset_id: str) -> Path:
-    result = data_dir / "datasets" / dataset_id
+def get_datasets_folder(data_dir: Path) -> Path:
+    result = data_dir / "datasets"
+    assert path_is_parent(data_dir, result)
+    return result
+
+
+def get_dataset_folder(data_dir: Path, dataset_id: str) -> Path:
+    result = get_datasets_folder(data_dir) / dataset_id
     assert path_is_parent(data_dir, result)
     return result
 
 
 def get_document_path(data_dir: Path, dataset_id: str, document_name: str) -> Path:
-    result = get_datasets_folder(data_dir, dataset_id) / document_name
+    result = get_dataset_folder(data_dir, dataset_id) / document_name
     assert path_is_parent(data_dir, result)
     return result
 
