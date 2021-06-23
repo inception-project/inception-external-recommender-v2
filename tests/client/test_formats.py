@@ -25,7 +25,7 @@ def test_build_sentence_classification_request():
     assert first_sentence.features == {}
 
     # Check annotations
-    actual_sentence_annotations = result.annotations[AnnotationTypes.SENTENCE_ANNOTATION.value]
+    actual_sentence_annotations = result.annotations[AnnotationTypes.ANNOTATION.value]
     assert len(sentences) == 2
     first_annotation, second_annotation = actual_sentence_annotations
 
@@ -47,7 +47,7 @@ def test_span_sentence_classification_request():
 
     result = build_span_classification_document(tokens, spans)
     value_feature = AnnotationFeatures.VALUE.value
-    actual_span_annotations = result.annotations[AnnotationTypes.SPAN_ANNOTATION.value]
+    actual_span_annotations = result.annotations[AnnotationTypes.ANNOTATION.value]
 
     first_ner = actual_span_annotations[0]
     assert first_ner.features[value_feature] == "PER"

@@ -21,7 +21,7 @@ def test_spacy_ner_predict(tmpdir):
     response = classifier.predict("spacy", predict_request)
 
     predicted_annotations = Annotations.from_dict(response.text, response.annotations)
-    predictions = predicted_annotations.select(AnnotationTypes.SPAN_ANNOTATION.value)
+    predictions = predicted_annotations.select(AnnotationTypes.ANNOTATION.value)
     predicted_labels = [p.features[classifier._target_feature] for p in predictions]
 
     assert len(predicted_labels) > 0

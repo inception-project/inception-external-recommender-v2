@@ -20,7 +20,7 @@ class SklearnSentenceClassifier(Classifier):
         super().__init__()
 
         self._sentence_type = AnnotationTypes.SENTENCE.value
-        self._sentence_annotation_type = AnnotationTypes.SENTENCE_ANNOTATION.value
+        self._sentence_annotation_type = AnnotationTypes.ANNOTATION.value
         self._target_feature = AnnotationFeatures.VALUE.value
 
     def train(self, model_id: str, documents: List[Document]):

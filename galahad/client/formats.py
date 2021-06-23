@@ -20,7 +20,7 @@ def build_sentence_classification_document(sentences: List[str], labels: List[st
     annotations = Annotations(text)
 
     sentence_type = AnnotationTypes.SENTENCE.value
-    sentence_annotation_type = AnnotationTypes.SENTENCE_ANNOTATION.value
+    sentence_annotation_type = AnnotationTypes.ANNOTATION.value
     value_feature = AnnotationFeatures.VALUE.value
 
     begin = 0
@@ -49,7 +49,7 @@ def build_span_classification_document(
     token_idx_to_ends = {}
 
     token_type = AnnotationTypes.TOKEN.value
-    span_annotation_type = AnnotationTypes.SPAN_ANNOTATION.value
+    span_annotation_type = AnnotationTypes.ANNOTATION.value
     value_feature = AnnotationFeatures.VALUE.value
 
     begin = 0

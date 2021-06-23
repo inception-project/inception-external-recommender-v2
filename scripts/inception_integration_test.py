@@ -8,7 +8,8 @@ from galahad.server.contrib.sentence_classification.sklearn_sentence_classifier 
     SklearnSentenceClassifier
 
 import tempfile
-data_dir = Path(tempfile.mkdtemp())
+# data_dir = Path(tempfile.mkdtemp())
+data_dir = Path("inception")
 
 
 server = GalahadServer(data_dir=data_dir)

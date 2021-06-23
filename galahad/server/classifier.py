@@ -16,8 +16,7 @@ logger = logging.getLogger(__file__)
 class AnnotationTypes(Enum):
     TOKEN = "t.token"
     SENTENCE = "t.sentence"
-    SENTENCE_ANNOTATION = "t.sentence_annotation"
-    SPAN_ANNOTATION = "t.span_annotation"
+    ANNOTATION = "t.annotation"
 
 
 class AnnotationFeatures(Enum):
