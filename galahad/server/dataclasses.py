@@ -16,6 +16,13 @@ Layers = Dict[str, Layer]
 # Datasets
 
 
+class DatasetList(BaseModel):
+    names: List[str]
+
+    class Config:
+        schema_extra = {"example": {"names": ["dataset1", "dataset2", "dataset3"]}}
+
+
 class Document(BaseModel):
     text: str  # Document text
     annotations: Dict[

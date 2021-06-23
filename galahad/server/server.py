@@ -88,6 +88,21 @@ def _register_routes(app: FastAPI):
         return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
 
     @app.get(
+        "/dataset",
+        response_model=DatasetList,
+        responses={status.HTTP_200_OK: {"description": "Returns list of all available datasets."}},
+        status_code=status.HTTP_200_OK,
+    )
+    def list_datasets():
+        """ Lists dataset names managed by this server. """
+        dataset_names = []
+
+        for p in sorted(get_datasets_folder(data_dir).iterdir()):
+            dataset_names.append(p.name)
+
+        return DatasetList(names=dataset_names)
+
+    @app.get(
         "/dataset/{dataset_id}",
         response_model=DocumentList,
         responses={
