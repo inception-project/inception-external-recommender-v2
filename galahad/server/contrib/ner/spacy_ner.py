@@ -1,7 +1,10 @@
 from typing import Optional
 
-import spacy as spacy
-from spacy.tokens import Doc
+try:
+    import spacy as spacy
+    from spacy.tokens import Doc
+except ImportError as error:
+    print("Could not import 'spacy', please install it manually via 'pip install spacy'")
 
 from galahad.client.formats import Span, build_span_classification_document
 from galahad.server.annotations import Annotations

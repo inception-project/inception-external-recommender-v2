@@ -1,10 +1,13 @@
 import logging
-from pathlib import Path
 from typing import List, Optional
 
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
+try:
+    from sklearn.feature_extraction.text import (CountVectorizer,
+                                                 TfidfTransformer)
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.pipeline import Pipeline
+except ImportError as error:
+    print("Could not import 'sklearn', please install it manually via 'pip install scikit-learn'")
 
 from galahad.client.formats import build_sentence_classification_document
 from galahad.server.annotations import Annotations

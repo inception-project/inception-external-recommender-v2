@@ -1,3 +1,4 @@
+import tempfile
 from pathlib import Path
 
 import uvicorn
@@ -7,7 +8,6 @@ from galahad.server.contrib.ner.spacy_ner import SpacyNerClassifier
 from galahad.server.contrib.sentence_classification.sklearn_sentence_classifier import \
     SklearnSentenceClassifier
 
-import tempfile
 # data_dir = Path(tempfile.mkdtemp())
 data_dir = Path("inception")
 
