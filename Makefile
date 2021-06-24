@@ -2,10 +2,12 @@ run:
 	uvicorn main:app --reload
 
 format:
-	black -l 120 main.py galahad/ tests/
+	black -l 120 main.py setup.py galahad/ tests/ scripts/
 
-	isort main.py  galahad/ tests/
+	isort main.py setup.py galahad/ tests/ scripts/
 
-test:
-	python -m spacy download en_core_web_sm
+test: get_test_dependencies
 	python -m pytest tests/
+
+get_test_dependencies:
+	python -m spacy download en_core_web_sm
