@@ -106,6 +106,29 @@ def _register_routes(app: FastAPI):
         dataset_folder.mkdir(parents=True)
         return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
 
+    @app.delete(
+        "/dataset/{dataset_id}",
+        responses={
+            status.HTTP_204_NO_CONTENT: {"description": "Dataset deleted."},
+            status.HTTP_404_NOT_FOUND: {"description": "Dataset not found."},
+        },
+        status_code=status.HTTP_204_NO_CONTENT,
+    )
+    def delete_dataset(
+        dataset_id: str = Path(..., title="Identifier of the dataset that should be deleted", regex=PATH_REGEX),
+    ):
+        """ Deletes the dataset with the given `dataset_id`  and its documents. """
+        dataset_folder = get_dataset_folder(data_dir, dataset_id)
+
+        if not dataset_folder.is_dir():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Dataset with id [{dataset_id}] not found."
+            )
+
+        shutil.rmtree(dataset_folder)
+
+        return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
+
     @app.get(
         "/dataset/{dataset_id}",
         response_model=DocumentList,
@@ -138,29 +161,6 @@ def _register_routes(app: FastAPI):
 
         return DocumentList(names=names, versions=versions)
 
-    @app.delete(
-        "/dataset/{dataset_id}",
-        responses={
-            status.HTTP_204_NO_CONTENT: {"description": "Dataset deleted."},
-            status.HTTP_404_NOT_FOUND: {"description": "Dataset not found."},
-        },
-        status_code=status.HTTP_204_NO_CONTENT,
-    )
-    def delete_dataset(
-        dataset_id: str = Path(..., title="Identifier of the dataset that should be deleted", regex=PATH_REGEX),
-    ):
-        """ Deletes the dataset with the given `dataset_id`  and its documents. """
-        dataset_folder = get_dataset_folder(data_dir, dataset_id)
-
-        if not dataset_folder.is_dir():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Dataset with id [{dataset_id}] not found."
-            )
-
-        shutil.rmtree(dataset_folder)
-
-        return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
-
     @app.put(
         "/dataset/{dataset_id}/{document_id}",
         responses={
@@ -185,6 +185,31 @@ def _register_routes(app: FastAPI):
         document_path = get_document_path(data_dir, dataset_id, document_id)
         with document_path.open("w", encoding="utf-8") as f:
             f.write(request.json(skip_defaults=True))
+
+        return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
+
+    @app.delete(
+        "/dataset/{dataset_id}/{document_id}",
+        responses={
+            status.HTTP_204_NO_CONTENT: {"description": "Document deleted."},
+            status.HTTP_404_NOT_FOUND: {"description": "Dataset not found."},
+        },
+        status_code=status.HTTP_204_NO_CONTENT,
+    )
+    def delete_document_from_dataset(
+        dataset_id: str = Path(..., title="Identifier of the dataset to delete from", regex=PATH_REGEX),
+        document_id: str = Path(..., title="Identifier of the document to delete", regex=PATH_REGEX),
+    ):
+        """ Adds a document to an already existing dataset. Overwrites a document if it already existed. """
+        dataset_folder = get_dataset_folder(data_dir, dataset_id)
+
+        if not dataset_folder.is_dir():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Dataset with id [{dataset_id}] not found."
+            )
+
+        document_path = get_document_path(data_dir, dataset_id, document_id)
+        document_path.unlink(missing_ok=True)
 
         return Response(content="", status_code=status.HTTP_204_NO_CONTENT)
 
