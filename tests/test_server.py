@@ -85,6 +85,31 @@ def test_create_dataset_when_dataset_exist_already(client: TestClient):
     assert response.json() == {"detail": "Dataset with id [test_dataset] already exists."}
 
 
+# DELETE delete_dataset
+
+
+def test_delete_dataset_when_dataset_does_not_already_exist(client: TestClient):
+    response = client.delete("/dataset/test_dataset")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Dataset with id [test_dataset] not found."}
+
+
+def test_delete_dataset_when_dataset_exist_already(client: TestClient):
+    p = get_dataset_folder(tmpdir, "test_dataset")
+    client.put("/dataset/test_dataset")
+    assert p.is_dir()
+
+    for i in range(3):
+        request = Document.Config.schema_extra["example"]
+        response = client.put(f"/dataset/test_dataset/test_document{i}", json=request)
+        assert response.status_code == 204
+
+    response = client.delete("/dataset/test_dataset")
+    assert response.status_code == 204
+    assert response.text == ""
+    assert not p.exists()
+
+
 # GET list_documents_in_dataset
 
 
@@ -126,31 +151,6 @@ def test_list_documents_in_dataset(client: TestClient):
     assert document_list.versions == expected_versions
 
 
-# DELETE delete_dataset
-
-
-def test_delete_dataset_when_dataset_does_not_already_exist(client: TestClient):
-    response = client.delete("/dataset/test_dataset")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Dataset with id [test_dataset] not found."}
-
-
-def test_delete_dataset_when_dataset_exist_already(client: TestClient):
-    p = get_dataset_folder(tmpdir, "test_dataset")
-    client.put("/dataset/test_dataset")
-    assert p.is_dir()
-
-    for i in range(3):
-        request = Document.Config.schema_extra["example"]
-        response = client.put(f"/dataset/test_dataset/test_document{i}", json=request)
-        assert response.status_code == 204
-
-    response = client.delete("/dataset/test_dataset")
-    assert response.status_code == 204
-    assert response.text == ""
-    assert not p.exists()
-
-
 # PUT add_document_to_dataset
 
 
@@ -179,6 +179,36 @@ def test_add_document_to_dataset_when_document_does_not_already_exist(client: Te
         document = json.load(f)
 
     assert document == request
+
+
+# DELETE delete_document_from_dataset
+
+
+def test_delete_document_from_dataset_when_dataset_does_not_already_exist(client: TestClient):
+    request = Document.Config.schema_extra["example"]
+
+    response = client.delete("/dataset/test_dataset/test_document", json=request)
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Dataset with id [test_dataset] not found."}
+
+
+def test_delete_document_from_dataset_when_document_exists(client: TestClient):
+    client.put("/dataset/test_dataset")
+
+    request = Document.Config.schema_extra["example"]
+
+    response = client.put("/dataset/test_dataset/test_document", json=request)
+    assert response.status_code == 204
+    assert response.text == ""
+
+    p = get_document_path(tmpdir, "test_dataset", "test_document")
+
+    assert p.is_file()
+
+    response = client.delete("/dataset/test_dataset/test_document")
+    assert response.status_code == 204
+    assert response.text == ""
+    assert not p.is_file()
 
 
 # GET get_all_classifier_infos
