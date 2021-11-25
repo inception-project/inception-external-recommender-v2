@@ -6,6 +6,7 @@ from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
 from galahad.server.dataclasses import Document
 
 
+
 @dataclass
 class Span:
     begin: int
@@ -39,7 +40,7 @@ def build_sentence_classification_document(sentences: List[str], labels: List[st
     return document
 
 
-def build_span_classification_document(
+def build_span_classification_request(
     sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
 ) -> Document:
     text = " ".join(t for sentence in sentences for t in sentence)
@@ -73,3 +74,40 @@ def build_span_classification_document(
 
     document = Document(text=text, annotations=annotations.to_dict(), version=version)
     return document
+
+#original_doc: Document
+def build_span_classification_response(text: str, sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0) -> Document:
+    #text = original_doc.text
+    annotations = Annotations(text)
+
+    token_type = AnnotationTypes.TOKEN.value
+    span_annotation_type = AnnotationTypes.ANNOTATION.value
+    value_feature = AnnotationFeatures.VALUE.value
+
+    current = 0
+    start_lists = []
+    end_lists = []
+    for sentence in sentences:
+        starts = []
+        ends = []
+        for token in sentence:
+            token_pos = text.find(token, current)
+            starts.append(token_pos)
+            current = token_pos + len(token)
+            ends.append(current)
+            annotations.create_annotation(token_type, token_pos, current)
+        start_lists.append(starts)
+        end_lists.append(ends)
+
+    for i in range(len(spans)):
+        current_starts = start_lists[i]
+        current_ends = end_lists[i]
+        for span in spans[i]:
+            annotations.create_annotation(span_annotation_type, current_starts[span.begin], current_ends[span.end-1], {value_feature: span.value})
+
+
+    document = Document(text=text, annotations=annotations.to_dict(), version=version)
+
+    return document
+
+

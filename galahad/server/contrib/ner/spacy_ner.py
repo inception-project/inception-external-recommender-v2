@@ -6,7 +6,7 @@ try:
 except ImportError as error:
     print("Could not import 'spacy', please install it manually via 'pip install spacy'")
 
-from galahad.client.formats import Span, build_span_classification_document
+from galahad.client.formats import Span, build_span_classification_response
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import (AnnotationFeatures, AnnotationTypes,
                                        Classifier)
@@ -34,7 +34,16 @@ class SpacyNerClassifier(Classifier):
 
         # For every entity returned by spacy, create an annotation in the resulting doc
         spans = []
+        #annot = []
         for named_entity in doc.ents:
             spans.append(Span(named_entity.start, named_entity.end, named_entity.label_))
+            #annot.append(words[named_entity.start: named_entity.end])
+            #print(words[named_entity.start: named_entity.end])
+            #print(named_entity.start)
+            #print(named_entity.end)
 
-        return build_span_classification_document([words], [spans])
+        for span in spans:
+            print(words[span.begin:span.end])
+
+        print("fjjf")
+        return build_span_classification_response(document.text, [words], [spans])

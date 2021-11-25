@@ -1,6 +1,7 @@
 from galahad.client.formats import (Span,
                                     build_sentence_classification_document,
-                                    build_span_classification_document)
+                                    build_span_classification_request,
+                                    build_span_classification_response)
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
 
 
@@ -45,7 +46,7 @@ def test_span_sentence_classification_request():
     ]
     spans = [[Span(0, 1, "PER"), Span(4, 8, "LOC")], [Span(3, 5, "ORG")]]
 
-    result = build_span_classification_document(tokens, spans)
+    result = build_span_classification_request(tokens, spans)
     value_feature = AnnotationFeatures.VALUE.value
     actual_span_annotations = result.annotations[AnnotationTypes.ANNOTATION.value]
 
@@ -63,3 +64,17 @@ def test_span_sentence_classification_request():
     assert third_ner.features[value_feature] == "ORG"
     assert third_ner.begin == 59
     assert third_ner.end == 71
+
+def test_span_sentence_classification_response():
+    tokens = [
+        ["Ohio", ",", "the", "Boston", "."],
+        ["Chanel", "No", ".", "5", "."],
+    ]
+    spans = [[Span(0, 1, "STATE"), Span(3, 4, "CAP")], [Span(0, 1, "CORP"), Span(3,4, "ORD")]]
+
+    text = "Ohio, the Boston. Chanel No. 5."
+
+    result_request = build_span_classification_response(text, tokens, spans)
+
+    print(result_request.text)
+    assert 0 == 0
