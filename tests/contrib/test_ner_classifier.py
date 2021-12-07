@@ -2,8 +2,7 @@ from pathlib import Path
 
 from datasets import load_dataset
 
-from galahad.client.formats import (build_sentence_classification_document,
-                                    build_span_classification_document)
+from galahad.client.formats import build_sentence_classification_document, build_span_classification_document
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationTypes
 from galahad.server.contrib.ner.spacy_ner import SpacyNerClassifier

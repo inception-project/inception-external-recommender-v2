@@ -1,7 +1,9 @@
-from galahad.client.formats import (Span,
-                                    build_sentence_classification_document,
-                                    build_span_classification_request,
-                                    build_span_classification_response)
+from galahad.client.formats import (
+    Span,
+    build_sentence_classification_document,
+    build_span_classification_request,
+    build_span_classification_response,
+)
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
 from galahad.server.dataclasses import Document
 
@@ -66,28 +68,30 @@ def test_span_sentence_classification_request():
     assert third_ner.begin == 59
     assert third_ner.end == 71
 
+
 def test_span_sentence_classification_response():
-    #tokens = [
+    # tokens = [
     #    ["Ohio", ",", "the", "Boston", "."],
     #    ["Chanel", "No", ".", "5", "."],
-    #]
+    # ]
     spans = [[Span(0, 1, "STATE"), Span(3, 4, "CAP")], [Span(0, 4, "TM")]]
 
     text = "Ohio, the Boston. Chanel No. 5."
     annotations = {}
-    annotations["t.token"] = [{"begin": 0, "end": 4},
-                              {"begin": 4, "end": 5},
-                              {"begin": 6, "end": 9},
-                              {"begin": 10, "end": 16},
-                              {"begin": 16, "end": 17},
-                              {"begin": 18, "end": 24},
-                              {"begin": 25, "end": 27},
-                              {"begin": 27, "end": 28},
-                              {"begin": 28, "end": 29},
-                              {"begin": 29, "end": 30}]
+    annotations["t.token"] = [
+        {"begin": 0, "end": 4},
+        {"begin": 4, "end": 5},
+        {"begin": 6, "end": 9},
+        {"begin": 10, "end": 16},
+        {"begin": 16, "end": 17},
+        {"begin": 18, "end": 24},
+        {"begin": 25, "end": 27},
+        {"begin": 27, "end": 28},
+        {"begin": 28, "end": 29},
+        {"begin": 29, "end": 30},
+    ]
 
-    annotations["t.sentence"] = [{"begin": 0, "end": 17},
-                                 {"begin": 18, "end": 30}]
+    annotations["t.sentence"] = [{"begin": 0, "end": 17}, {"begin": 18, "end": 30}]
 
     doc = Document(text=text, annotations=annotations, version=0)
 

@@ -7,11 +7,9 @@ from typing import Callable
 from fastapi import FastAPI, HTTPException, Path, Response, status
 from starlette.background import BackgroundTasks
 
-from galahad.server.classifier import (Classifier, ClassifierStore,
-                                       train_classifier)
+from galahad.server.classifier import Classifier, ClassifierStore, train_classifier
 from galahad.server.dataclasses import *
-from galahad.server.util import (get_dataset_folder, get_datasets_folder,
-                                 get_document_path)
+from galahad.server.util import get_dataset_folder, get_datasets_folder, get_document_path
 
 # This regex forbids two consecutive dots so that ../foo does not work
 # to discovery files outside of the document folder
@@ -76,7 +74,7 @@ def _register_routes(app: FastAPI):
         status_code=status.HTTP_200_OK,
     )
     def list_datasets():
-        """ Lists dataset names managed by this server. """
+        """Lists dataset names managed by this server."""
         dataset_names = []
 
         for p in sorted(get_datasets_folder(data_dir).iterdir()):
@@ -95,7 +93,7 @@ def _register_routes(app: FastAPI):
     def create_dataset(
         dataset_id: str = Path(..., title="Identifier of the dataset that should be created", regex=PATH_REGEX),
     ):
-        """ Creates a dataset with the given `dataset_id`. Does nothing and returns `409` if it already existed. """
+        """Creates a dataset with the given `dataset_id`. Does nothing and returns `409` if it already existed."""
         dataset_folder = get_dataset_folder(data_dir, dataset_id)
 
         if dataset_folder.exists():
@@ -117,7 +115,7 @@ def _register_routes(app: FastAPI):
     def delete_dataset(
         dataset_id: str = Path(..., title="Identifier of the dataset that should be deleted", regex=PATH_REGEX),
     ):
-        """ Deletes the dataset with the given `dataset_id`  and its documents. """
+        """Deletes the dataset with the given `dataset_id`  and its documents."""
         dataset_folder = get_dataset_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
@@ -143,7 +141,7 @@ def _register_routes(app: FastAPI):
             ..., title="Identifier of the dataset whose documents should be listed", regex=PATH_REGEX
         ),
     ):
-        """ Lists documents in the dataset with the given `dataset_id`. """
+        """Lists documents in the dataset with the given `dataset_id`."""
         dataset_folder = get_dataset_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
@@ -174,7 +172,7 @@ def _register_routes(app: FastAPI):
         dataset_id: str = Path(..., title="Identifier of the dataset to add to", regex=PATH_REGEX),
         document_id: str = Path(..., title="Identifier of the document to add", regex=PATH_REGEX),
     ):
-        """ Adds a document to an already existing dataset. Overwrites a document if it already existed. """
+        """Adds a document to an already existing dataset. Overwrites a document if it already existed."""
         dataset_folder = get_dataset_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
@@ -200,7 +198,7 @@ def _register_routes(app: FastAPI):
         dataset_id: str = Path(..., title="Identifier of the dataset to delete from", regex=PATH_REGEX),
         document_id: str = Path(..., title="Identifier of the document to delete", regex=PATH_REGEX),
     ):
-        """ Deletes a document from a dataset. Does nothing if the document did not exist. """
+        """Deletes a document from a dataset. Does nothing if the document did not exist."""
         dataset_folder = get_dataset_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
@@ -218,11 +216,13 @@ def _register_routes(app: FastAPI):
     @app.get(
         "/classifier",
         response_model=List[ClassifierInfo],
-        responses={status.HTTP_200_OK: {"description": "Returns list of documents in dataset."},},
+        responses={
+            status.HTTP_200_OK: {"description": "Returns list of documents in dataset."},
+        },
         status_code=status.HTTP_200_OK,
     )
     def get_all_classifier_infos():
-        """ Gets the classifier info for all classifiers managed by this server. """
+        """Gets the classifier info for all classifiers managed by this server."""
         return classifier_store.get_classifier_infos()
 
     @app.get(
@@ -235,7 +235,7 @@ def _register_routes(app: FastAPI):
         status_code=status.HTTP_200_OK,
     )
     def get_classifier_info(classifier_id: str = Path(..., title="Identifier of the classifier whose info to query")):
-        """ Gets the classifier info for the requested classifier id if it exists. """
+        """Gets the classifier info for the requested classifier id if it exists."""
         classifier_info = classifier_store.get_classifier_info(classifier_id)
 
         if classifier_info is None:

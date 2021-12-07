@@ -41,7 +41,7 @@ def build_sentence_classification_document(sentences: List[str], labels: List[st
 
 
 def build_span_classification_request(
-        sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
+    sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
 ) -> Document:
     text = " ".join(t for sentence in sentences for t in sentence)
     annotations = Annotations(text)
@@ -76,7 +76,9 @@ def build_span_classification_request(
     return document
 
 
-def build_span_classification_response(original_doc: Document, spans: List[List[Span]] = None, version: int = 0) -> Document:
+def build_span_classification_response(
+    original_doc: Document, spans: List[List[Span]] = None, version: int = 0
+) -> Document:
 
     annotated_doc = copy.deepcopy(original_doc)
 
@@ -84,7 +86,6 @@ def build_span_classification_response(original_doc: Document, spans: List[List[
     tokens = original_doc.annotations["t.token"]
     assert "t.sentence" in original_doc.annotations
     sentences = original_doc.annotations["t.sentence"]
-
 
     token_begin_list = []
     token_end_list = []
@@ -110,8 +111,10 @@ def build_span_classification_response(original_doc: Document, spans: List[List[
         current_sentence = sentences[i]
         current_offset = current_sentence.begin
         for span in spans[i]:
-            anno = Annotation(begin = token_begin_list[sentence_begin_list[i] + span.begin],
-                              end = token_end_list[sentence_begin_list[i] + span.end - 1],
-                              features = {"f.value": span.value})
+            anno = Annotation(
+                begin=token_begin_list[sentence_begin_list[i] + span.begin],
+                end=token_end_list[sentence_begin_list[i] + span.end - 1],
+                features={"f.value": span.value},
+            )
             annotated_doc.annotations["t.annotation"].append(anno)
     return annotated_doc

@@ -2,8 +2,7 @@ import logging
 from typing import List, Optional
 
 try:
-    from sklearn.feature_extraction.text import (CountVectorizer,
-                                                 TfidfTransformer)
+    from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
     from sklearn.naive_bayes import MultinomialNB
     from sklearn.pipeline import Pipeline
 except ImportError as error:
@@ -11,8 +10,7 @@ except ImportError as error:
 
 from galahad.client.formats import build_sentence_classification_document
 from galahad.server.annotations import Annotations
-from galahad.server.classifier import (AnnotationFeatures, AnnotationTypes,
-                                       Classifier, Remapper)
+from galahad.server.classifier import AnnotationFeatures, AnnotationTypes, Classifier, Remapper
 from galahad.server.dataclasses import Document
 
 logger = logging.getLogger(__name__)
