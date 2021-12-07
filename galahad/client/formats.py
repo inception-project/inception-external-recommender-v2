@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import List
+import copy
 
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
-from galahad.server.dataclasses import Document
-
+from galahad.server.dataclasses import Document, Annotation
 
 
 @dataclass
@@ -41,7 +41,7 @@ def build_sentence_classification_document(sentences: List[str], labels: List[st
 
 
 def build_span_classification_request(
-    sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
+        sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
 ) -> Document:
     text = " ".join(t for sentence in sentences for t in sentence)
     annotations = Annotations(text)
@@ -75,39 +75,40 @@ def build_span_classification_request(
     document = Document(text=text, annotations=annotations.to_dict(), version=version)
     return document
 
-#original_doc: Document
-def build_span_classification_response(text: str, sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0) -> Document:
-    #text = original_doc.text
-    annotations = Annotations(text)
 
-    token_type = AnnotationTypes.TOKEN.value
-    span_annotation_type = AnnotationTypes.ANNOTATION.value
-    value_feature = AnnotationFeatures.VALUE.value
+def build_span_classification_response(original_doc: Document, spans: List[List[Span]] = None, version: int = 0) -> Document:
 
-    current = 0
-    start_lists = []
-    end_lists = []
+    annotated_doc = copy.deepcopy(original_doc)
+
+    sentences = original_doc.annotations["t.sentence"]
+    tokens = original_doc.annotations["t.token"]
+
+    token_begin_list = []
+    token_end_list = []
+    for token in tokens:
+        token_begin_list.append(token.begin)
+        token_end_list.append(token.end)
+
+    sentence_begin_list = []
+    sentence_end_list = []
+    current_begin_index = 0
+    current_end_index = 0
     for sentence in sentences:
-        starts = []
-        ends = []
-        for token in sentence:
-            token_pos = text.find(token, current)
-            starts.append(token_pos)
-            current = token_pos + len(token)
-            ends.append(current)
-            annotations.create_annotation(token_type, token_pos, current)
-        start_lists.append(starts)
-        end_lists.append(ends)
+        current_begin_index = token_begin_list[current_end_index:].index(sentence.begin) + current_end_index
+        current_end_index = token_end_list[current_begin_index:].index(sentence.end) + current_begin_index
+        sentence_begin_list.append(current_begin_index)
+        sentence_end_list.append(current_end_index)
+
+    annotated_doc.annotations["t.annotation"] = []
 
     for i in range(len(spans)):
-        current_starts = start_lists[i]
-        current_ends = end_lists[i]
+        current_sentence = sentences[i]
+        current_offset = current_sentence.begin
         for span in spans[i]:
-            annotations.create_annotation(span_annotation_type, current_starts[span.begin], current_ends[span.end-1], {value_feature: span.value})
-
-
-    document = Document(text=text, annotations=annotations.to_dict(), version=version)
-
-    return document
+            anno = Annotation(begin = token_begin_list[sentence_begin_list[i] + span.begin],
+                              end = token_end_list[sentence_begin_list[i] + span.end - 1],
+                              features = {"f.value": span.value})
+            annotated_doc.annotations["t.annotation"].append(anno)
+    return annotated_doc
 
 
