@@ -80,11 +80,15 @@ def build_span_classification_response(original_doc: Document, spans: List[List[
 
     annotated_doc = copy.deepcopy(original_doc)
 
-    sentences = original_doc.annotations["t.sentence"]
+    assert "t.token" in original_doc.annotations
     tokens = original_doc.annotations["t.token"]
+    assert "t.sentence" in original_doc.annotations
+    sentences = original_doc.annotations["t.sentence"]
+
 
     token_begin_list = []
     token_end_list = []
+
     for token in tokens:
         token_begin_list.append(token.begin)
         token_end_list.append(token.end)
@@ -93,6 +97,7 @@ def build_span_classification_response(original_doc: Document, spans: List[List[
     sentence_end_list = []
     current_begin_index = 0
     current_end_index = 0
+
     for sentence in sentences:
         current_begin_index = token_begin_list[current_end_index:].index(sentence.begin) + current_end_index
         current_end_index = token_end_list[current_begin_index:].index(sentence.end) + current_begin_index
@@ -110,5 +115,3 @@ def build_span_classification_response(original_doc: Document, spans: List[List[
                               features = {"f.value": span.value})
             annotated_doc.annotations["t.annotation"].append(anno)
     return annotated_doc
-
-
