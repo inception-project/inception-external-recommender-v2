@@ -14,6 +14,8 @@ class Span:
     value: str
 
 
+
+
 def build_sentence_classification_document(sentences: List[str], labels: List[str], version: int = 0) -> Document:
     assert len(sentences) == len(labels), "Sentences and labels need to have the same length!"
 
@@ -82,10 +84,10 @@ def build_span_classification_response(
 
     annotated_doc = copy.deepcopy(original_doc)
 
-    assert "t.token" in original_doc.annotations
-    tokens = original_doc.annotations["t.token"]
-    assert "t.sentence" in original_doc.annotations
-    sentences = original_doc.annotations["t.sentence"]
+    assert AnnotationTypes.TOKEN.value in original_doc.annotations
+    tokens = original_doc.annotations[AnnotationTypes.TOKEN.value]
+    assert AnnotationTypes.SENTENCE.value in original_doc.annotations
+    sentences = original_doc.annotations[AnnotationTypes.SENTENCE.value]
 
     token_begin_list = []
     token_end_list = []
@@ -105,16 +107,15 @@ def build_span_classification_response(
         sentence_begin_list.append(current_begin_index)
         sentence_end_list.append(current_end_index)
 
-    annotated_doc.annotations["t.annotation"] = []
+    annotated_doc.annotations[AnnotationTypes.ANNOTATION.value] = []
 
     for i in range(len(spans)):
-        current_sentence = sentences[i]
-        current_offset = current_sentence.begin
+        current_offset = sentences[i].begin
         for span in spans[i]:
             anno = Annotation(
                 begin=token_begin_list[sentence_begin_list[i] + span.begin],
                 end=token_end_list[sentence_begin_list[i] + span.end - 1],
-                features={"f.value": span.value},
+                features={AnnotationFeatures.VALUE.value: span.value},
             )
-            annotated_doc.annotations["t.annotation"].append(anno)
+            annotated_doc.annotations[AnnotationTypes.ANNOTATION.value].append(anno)
     return annotated_doc
