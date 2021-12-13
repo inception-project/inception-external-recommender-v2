@@ -1,10 +1,10 @@
+import copy
 from dataclasses import dataclass
 from typing import List
-import copy
 
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
-from galahad.server.dataclasses import Document, Annotation
+from galahad.server.dataclasses import Annotation, Document
 
 
 @dataclass
@@ -12,8 +12,6 @@ class Span:
     begin: int
     end: int
     value: str
-
-
 
 
 def build_sentence_classification_document(sentences: List[str], labels: List[str], version: int = 0) -> Document:
@@ -83,6 +81,7 @@ def build_span_classification_response(
 ) -> Document:
 
     annotated_doc = copy.deepcopy(original_doc)
+    annotated_doc.version = version
 
     assert AnnotationTypes.TOKEN.value in original_doc.annotations
     tokens = original_doc.annotations[AnnotationTypes.TOKEN.value]
@@ -98,7 +97,7 @@ def build_span_classification_response(
 
     sentence_begin_list = []
     sentence_end_list = []
-    current_begin_index = 0
+    # current_begin_index = 0
     current_end_index = 0
 
     for sentence in sentences:
@@ -110,7 +109,6 @@ def build_span_classification_response(
     annotated_doc.annotations[AnnotationTypes.ANNOTATION.value] = []
 
     for i in range(len(spans)):
-        current_offset = sentences[i].begin
         for span in spans[i]:
             anno = Annotation(
                 begin=token_begin_list[sentence_begin_list[i] + span.begin],
