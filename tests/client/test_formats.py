@@ -2,6 +2,7 @@ from galahad.client.formats import (Span,
                                     build_sentence_classification_document,
                                     build_span_classification_request,
                                     build_span_classification_response)
+from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
 from galahad.server.dataclasses import Document
 
@@ -74,31 +75,34 @@ def test_span_sentence_classification_response():
     # ]
     spans = [[Span(0, 1, "STATE"), Span(3, 4, "CAP")], [Span(0, 4, "TM")]]
 
-    text = "Ohio, the Boston. Chanel No. 5."
-    annotations = {
-        "t.token": [
-            {"begin": 0, "end": 4},
-            {"begin": 4, "end": 5},
-            {"begin": 6, "end": 9},
-            {"begin": 10, "end": 16},
-            {"begin": 16, "end": 17},
-            {"begin": 18, "end": 24},
-            {"begin": 25, "end": 27},
-            {"begin": 27, "end": 28},
-            {"begin": 28, "end": 29},
-            {"begin": 29, "end": 30},
-        ],
-        "t.sentence": [{"begin": 0, "end": 17}, {"begin": 18, "end": 30}],
+    raw_document = {
+        "text": "Ohio, the Boston. Chanel No. 5.",
+        "version": 0,
+        "annotations": {
+            "t.token": [
+                {"begin": 0, "end": 4},
+                {"begin": 4, "end": 5},
+                {"begin": 6, "end": 9},
+                {"begin": 10, "end": 16},
+                {"begin": 16, "end": 17},
+                {"begin": 18, "end": 24},
+                {"begin": 25, "end": 27},
+                {"begin": 27, "end": 28},
+                {"begin": 28, "end": 29},
+                {"begin": 29, "end": 30},
+            ],
+            "t.sentence": [{"begin": 0, "end": 17}, {"begin": 18, "end": 30}],
+        }
     }
 
-    doc = Document(text=text, annotations=annotations, version=0)
+    document = Document.parse_obj(raw_document)
 
-    result = build_span_classification_response(doc, spans)
-
-    assert result.text == text
-
+    result = build_span_classification_response(document, spans)
+    actual_annotations = Annotations.from_document(result)
+    actual_span_annotations = actual_annotations.select(AnnotationTypes.ANNOTATION.value)
     value_feature = AnnotationFeatures.VALUE.value
-    actual_span_annotations = result.annotations[AnnotationTypes.ANNOTATION.value]
+
+    assert result.text == raw_document["text"]
 
     first_ner = actual_span_annotations[0]
     assert first_ner.features[value_feature] == "STATE"
