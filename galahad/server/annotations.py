@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Tuple
 
 from sortedcontainers import SortedKeyList
 
-from galahad.server.dataclasses import Annotation
+from galahad.server.dataclasses import Annotation, Document
 
 
 class Annotations:
@@ -20,7 +20,17 @@ class Annotations:
 
         return result
 
-    def to_dict(self) -> Dict[str, List[Annotation]]:
+    @staticmethod
+    def from_document(document: Document) -> "Annotations":
+        result = Annotations(document.text)
+
+        for type_name, annotations in document.annotations.items():
+            for annotation in annotations:
+                result.create_annotation(type_name, annotation.begin, annotation.end, annotation.features)
+
+        return result
+
+    def to_dict(self) -> Dict[str, List[Dict[str, Any]]]:
         result = defaultdict(list)
         for type_name, annotations in self._index.items():
             for annotation in annotations:
@@ -29,6 +39,9 @@ class Annotations:
                 )
 
         return result
+
+    def get_annotations(self) -> Dict[str, List[Annotation]]:
+        return {type_name: list(annos) for type_name, annos in self._index.items()}
 
     def create_annotation(self, type_name, begin: int, end: int, features: Dict[str, Any] = None) -> Annotation:
         if features is None:

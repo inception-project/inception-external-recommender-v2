@@ -21,7 +21,7 @@ install_requires = [
     "filelock==3.0.*",
 ]
 
-test_dependencies = ["codecov", "pytest", "pytest-cov"]
+test_dependencies = ["codecov", "pytest", "pytest-cov", "datasets"]
 
 dev_dependencies = ["black", "isort"]
 

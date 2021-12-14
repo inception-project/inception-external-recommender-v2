@@ -1,3 +1,4 @@
+import copy
 from dataclasses import dataclass
 from typing import List
 
@@ -39,7 +40,7 @@ def build_sentence_classification_document(sentences: List[str], labels: List[st
     return document
 
 
-def build_span_classification_document(
+def build_span_classification_request(
     sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
 ) -> Document:
     text = " ".join(t for sentence in sentences for t in sentence)
@@ -53,7 +54,9 @@ def build_span_classification_document(
     value_feature = AnnotationFeatures.VALUE.value
 
     begin = 0
+    end = 0
     for sentence_idx, sentence in enumerate(sentences):
+        sentence_start = begin
         for token_idx, token_text in enumerate(sentence):
             end = begin + len(token_text)
             token_idx_to_begins[(sentence_idx, token_idx)] = begin
@@ -63,6 +66,7 @@ def build_span_classification_document(
             assert annotations.get_covered_text(annotation) == token_text
 
             begin = end + 1
+        annotations.create_annotation(AnnotationTypes.SENTENCE.value, sentence_start, end)
 
     for sentence_idx, sentence in enumerate(spans or []):
         for span in sentence:
@@ -73,3 +77,35 @@ def build_span_classification_document(
 
     document = Document(text=text, annotations=annotations.to_dict(), version=version)
     return document
+
+
+def build_span_classification_response(
+    original_doc: Document, spans: List[List[Span]] = None, version: int = 0
+) -> Document:
+    annotated_doc = copy.deepcopy(original_doc)
+    annotated_doc.version = version
+
+    assert AnnotationTypes.TOKEN.value in original_doc.annotations
+    assert AnnotationTypes.SENTENCE.value in original_doc.annotations
+
+    annotations = Annotations.from_dict(annotated_doc.text, annotated_doc.annotations)
+
+    sentences = annotations.select(AnnotationTypes.SENTENCE.value)
+    assert len(sentences) == len(spans)
+
+    for sentence, cur_spans in zip(sentences, spans):
+        tokens = annotations.select_covered(AnnotationTypes.TOKEN.value, sentence)
+
+        for span in cur_spans:
+            first_token = tokens[span.begin]
+            last_token = tokens[span.end - 1]
+
+            annotations.create_annotation(
+                AnnotationTypes.ANNOTATION.value,
+                first_token.begin,
+                last_token.end,
+                {AnnotationFeatures.VALUE.value: span.value},
+            )
+
+    annotated_doc.annotations = annotations.get_annotations()
+    return annotated_doc
