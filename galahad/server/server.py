@@ -7,9 +7,11 @@ from typing import Callable
 from fastapi import FastAPI, HTTPException, Path, Response, status
 from starlette.background import BackgroundTasks
 
-from galahad.server.classifier import Classifier, ClassifierStore, train_classifier
+from galahad.server.classifier import (Classifier, ClassifierStore,
+                                       train_classifier)
 from galahad.server.dataclasses import *
-from galahad.server.util import get_dataset_folder, get_datasets_folder, get_document_path
+from galahad.server.util import (get_dataset_folder, get_datasets_folder,
+                                 get_document_path)
 
 # This regex forbids two consecutive dots so that ../foo does not work
 # to discovery files outside of the document folder

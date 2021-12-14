@@ -5,7 +5,8 @@ import uvicorn
 
 from galahad.server import GalahadServer
 from galahad.server.contrib.ner.spacy_ner import SpacyNerClassifier
-from galahad.server.contrib.sentence_classification.sklearn_sentence_classifier import SklearnSentenceClassifier
+from galahad.server.contrib.sentence_classification.sklearn_sentence_classifier import \
+    SklearnSentenceClassifier
 
 # data_dir = Path(tempfile.mkdtemp())
 data_dir = Path("inception")

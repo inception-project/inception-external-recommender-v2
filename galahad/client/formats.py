@@ -54,7 +54,9 @@ def build_span_classification_request(
     value_feature = AnnotationFeatures.VALUE.value
 
     begin = 0
+    end = 0
     for sentence_idx, sentence in enumerate(sentences):
+        sentence_start = begin
         for token_idx, token_text in enumerate(sentence):
             end = begin + len(token_text)
             token_idx_to_begins[(sentence_idx, token_idx)] = begin
@@ -64,6 +66,7 @@ def build_span_classification_request(
             assert annotations.get_covered_text(annotation) == token_text
 
             begin = end + 1
+        annotations.create_annotation(AnnotationTypes.SENTENCE.value, sentence_start, end)
 
     for sentence_idx, sentence in enumerate(spans or []):
         for span in sentence:
