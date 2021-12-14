@@ -41,7 +41,7 @@ def build_sentence_classification_document(sentences: List[str], labels: List[st
 
 
 def build_span_classification_request(
-        sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
+    sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
 ) -> Document:
     text = " ".join(t for sentence in sentences for t in sentence)
     annotations = Annotations(text)
@@ -80,7 +80,7 @@ def build_span_classification_request(
 
 
 def build_span_classification_response(
-        original_doc: Document, spans: List[List[Span]] = None, version: int = 0
+    original_doc: Document, spans: List[List[Span]] = None, version: int = 0
 ) -> Document:
     annotated_doc = copy.deepcopy(original_doc)
     annotated_doc.version = version
@@ -100,8 +100,12 @@ def build_span_classification_response(
             first_token = tokens[span.begin]
             last_token = tokens[span.end - 1]
 
-            annotations.create_annotation(AnnotationTypes.ANNOTATION.value, first_token.begin, last_token.end,
-                                          {AnnotationFeatures.VALUE.value: span.value})
+            annotations.create_annotation(
+                AnnotationTypes.ANNOTATION.value,
+                first_token.begin,
+                last_token.end,
+                {AnnotationFeatures.VALUE.value: span.value},
+            )
 
     annotated_doc.annotations = annotations.get_annotations()
     return annotated_doc

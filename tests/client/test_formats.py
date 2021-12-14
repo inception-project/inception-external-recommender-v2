@@ -92,7 +92,7 @@ def test_span_sentence_classification_response():
                 {"begin": 29, "end": 30},
             ],
             "t.sentence": [{"begin": 0, "end": 17}, {"begin": 18, "end": 30}],
-        }
+        },
     }
 
     document = Document.parse_obj(raw_document)
