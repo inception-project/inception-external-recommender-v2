@@ -1,0 +1,15 @@
+galahad~=0.1.0.dev0
+pytest~=6.2.5
+uvicorn~=0.13.4
+datasets~=1.16.1
+fastapi~=0.65.3
+requests~=2.26.0
+spacy~=3.2.0
+sklearn~=0.0
+scikit-learn~=1.0.1
+pydantic~=1.8.2
+starlette~=0.14.2
+joblib~=1.0.1
+filelock~=3.0.12
+sortedcontainers~=2.4.0
+setuptools~=59.1.1
