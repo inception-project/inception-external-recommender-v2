@@ -19,7 +19,7 @@ install_requires = [
     "joblib==1.0.*",
     "datasets==1.6.*",
     "filelock==3.0.*",
-    "requests~=2.26.0"
+    "requests~=2.26.0",
 ]
 
 test_dependencies = ["codecov", "pytest", "pytest-cov", "datasets"]
