@@ -19,6 +19,11 @@ from galahad.server.util import (NamingError, get_dataset_folder,
 PATH_REGEX = r"^[a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)*$"
 
 
+def check_naming_is_ok_regex(name: str):
+    if not re.match(PATH_REGEX, name):
+        raise NamingError(f'The name "{name}" is invalid. ' "Please look at the documentation for correct naming.")
+
+
 class GalahadServer(FastAPI):
     def __init__(self, title: str = "Galahad Server", data_dir: pathlib.Path = None) -> None:
         super().__init__(title=title)
@@ -39,11 +44,7 @@ class GalahadServer(FastAPI):
         _register_routes(self)
 
     def add_classifier(self, name: str, classifier: Classifier):
-        if not re.match(PATH_REGEX, name):
-            raise NamingError(
-                'Naming for the classifier "' + name + '" is invalid. '
-                "Please look at the documentation for correct naming."
-            )
+        check_naming_is_ok_regex(name)
 
         document_path = get_document_path(self.state.data_dir, "classifier", name)
         document_path.unlink(missing_ok=True)

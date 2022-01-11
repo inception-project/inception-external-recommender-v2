@@ -212,7 +212,7 @@ def test_delete_document_from_dataset_when_document_exists(client: TestClient):
     assert not p.is_file()
 
 
-def test_create_classifier(server: GalahadServer):
+def test_create_classifier_with_invalid_name(server: GalahadServer):
     test_classifier = TestClassifier()
     with pytest.raises(NamingError):
         server.add_classifier("/this/is/a/path", test_classifier)

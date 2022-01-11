@@ -1,8 +1,10 @@
+import logging
+
 import pytest
 
 from galahad.client.api_client import GalahadClient
 from galahad.server import GalahadServer
-from galahad.server.dataclasses import Document
+from galahad.server.dataclasses import ClassifierInfo, Document
 from galahad.server.util import DataNonExistentError, NamingError
 from tests.fixtures import TestClassifier
 
@@ -18,6 +20,10 @@ address = "http://" + host + ":" + str(port)
 client = GalahadClient(address)
 
 
+def setup_function():
+    client.delete_all_datasets()
+
+
 def test_creation():
     assert client.endpoint_url == address
 
@@ -26,69 +32,88 @@ def test_is_connected():
     assert client.is_connected()
 
 
-def test_create_dataset(caplog):
-    client.delete_all_datasets()
-
+def test_create_dataset():
     client.create_dataset("dataset1")
-    assert len(caplog.messages) == 0
     assert len(client.list_datasets()) == 1
 
-    client.create_dataset("dataset2")
-    assert len(caplog.messages) == 0
 
-    client.create_dataset("dataset2")
-    assert len(caplog.messages) == 1 and caplog.messages[0] == "Dataset with id: dataset2 already exists"
+def test_create_dataset_which_already_exists(caplog):
+    client.create_dataset("dataset1")
+
+    with caplog.at_level(logging.INFO):
+        client.create_dataset("dataset1")
+    assert len(caplog.messages) == 1
+    assert caplog.messages[0] == 'Dataset with id "dataset1" already exists'
+    assert len(client.list_datasets()) == 1
 
 
 def test_list_datasets():
-    client.delete_all_datasets()
-
     client.create_dataset("dataset2")
     client.create_dataset("dataset1")
 
     # sorted by name
     assert ["dataset1", "dataset2"] == client.list_datasets()
-    assert client.contains_dataset("dataset1")
-    assert client.contains_dataset("dataset2")
 
 
-def test_delete_dataset(caplog):
-    client.delete_all_datasets()
+def contains_dataset_if_dataset_exists():
+    client.create_dataset("dataset1")
+    assert client.contains_dataset("dataset1") is True
 
+
+def contains_dataset_if_dataset_does_not_exist():
+    assert client.contains_dataset("dataset1") is False
+
+
+def contains_dataset_naming():
+    with pytest.raises(NamingError):
+        client.contains_dataset("-")
+
+
+def test_delete_dataset():
     client.create_dataset("dataset1")
 
     client.delete_dataset("dataset1")
-    assert len(caplog.messages) == 0
     assert len(client.list_datasets()) == 0
 
-    client.delete_dataset("dataset1")
-    assert len(caplog.messages) == 1 and caplog.messages[0] == "Dataset with id: dataset1 does not exist"
 
+def test_delete_dataset_which_does_not_exist(caplog):
+    with caplog.at_level(logging.INFO):
+        client.delete_dataset("dataset1")
+    assert len(caplog.messages) == 1
+    assert caplog.messages[0] == 'Dataset with id "dataset1" does not exist'
+
+
+def test_delete_dataset_naming():
     with pytest.raises(NamingError):
         client.delete_dataset("-")
 
 
+# TODO: No assert here -> how to check the creation of a document? Integrate test from test_server?
 def test_create_document_in_dataset():
     doc = Document.Config.schema_extra["example"]
-    client.delete_all_datasets()
+
+    client.create_dataset("dataset1")
+    client.create_document_in_dataset("dataset1", "doc1", doc)
+
+
+def test_create_document_in_dataset_if_dataset_does_not_exist():
+    doc = Document.Config.schema_extra["example"]
 
     with pytest.raises(DataNonExistentError):
         client.create_document_in_dataset("dataset1", "doc1", doc)
 
     client.create_document_in_dataset("dataset1", "doc1", doc, True)
 
-    client.create_dataset("dataset2")
-    client.create_document_in_dataset("dataset2", "doc1", doc)
+
+@pytest.mark.parametrize("dataset_id, document_id", [("-", "doc1"), ("dataset1", "-")])
+def test_create_document_in_dataset_naming(dataset_id, document_id):
+    doc = Document.Config.schema_extra["example"]
 
     with pytest.raises(NamingError):
-        client.create_document_in_dataset("-", "doc1", doc)
-
-    with pytest.raises(NamingError):
-        client.create_document_in_dataset("dataset1", "-", doc)
+        client.create_document_in_dataset(dataset_id, document_id, doc)
 
 
 def test_list_documents_in_dataset():
-    client.delete_all_datasets()
     doc = Document.Config.schema_extra["example"]
 
     client.create_dataset("dataset1")
@@ -106,15 +131,42 @@ def test_list_documents_in_dataset():
     assert list(response.keys()) == ["doc1", "doc2", "doc3"]
     assert list(response.values()) == [2, 8, 7]
 
-    with pytest.raises(DataNonExistentError):
-        client.list_documents_in_dataset("dataset2")
 
+def test_list_documents_in_dataset_if_dataset_does_not_exist():
+    with pytest.raises(DataNonExistentError):
+        client.list_documents_in_dataset("dataset1")
+
+
+def test_list_documents_in_dataset_naming():
     with pytest.raises(NamingError):
         client.list_documents_in_dataset("-")
 
 
+def test_dataset_contains_document():
+    doc = Document.Config.schema_extra["example"]
+    client.create_dataset("dataset1")
+    client.create_document_in_dataset("dataset1", "doc1", doc)
+
+    assert client.dataset_contains_document("dataset1", "doc1") is True
+
+
+def test_dataset_contains_document_if_document_does_not_exist():
+    client.create_dataset("dataset1")
+    assert client.dataset_contains_document("dataset1", "doc1") is False
+
+
+def test_dataset_contains_document_if_dataset_does_not_exist():
+    with pytest.raises(DataNonExistentError):
+        client.dataset_contains_document("dataset1", "doc1")
+
+
+@pytest.mark.parametrize("dataset_id, document_id", [("-", "doc1"), ("dataset1", "-")])
+def test_dataset_contains_document_naming(dataset_id, document_id):
+    with pytest.raises(NamingError):
+        client.dataset_contains_document(dataset_id, document_id)
+
+
 def test_delete_document_in_dataset():
-    client.delete_all_datasets()
     doc = Document.Config.schema_extra["example"]
 
     client.create_dataset("dataset1")
@@ -126,72 +178,98 @@ def test_delete_document_in_dataset():
     client.delete_document_in_dataset("dataset1", "doc1")
     assert len(client.list_documents_in_dataset("dataset1")) == 0
 
-    client.delete_document_in_dataset("dataset1", "doc2")
 
+def test_delete_document_in_dataset_if_document_does_not_exist(caplog):
+    client.create_dataset("dataset1")
+    with caplog.at_level(logging.INFO):
+        client.delete_document_in_dataset("dataset1", "doc1")
+    assert len(caplog.messages) == 1
+    assert caplog.messages[0] == 'Document with id "doc1" does not exist in dataset with id "dataset1"'
+
+
+def test_delete_document_in_dataset_if_dataset_does_not_exist():
     with pytest.raises(DataNonExistentError):
         client.delete_document_in_dataset("dataset2", "doc1")
 
-    with pytest.raises(NamingError):
-        client.delete_document_in_dataset("-", "doc1")
 
+@pytest.mark.parametrize("dataset_id, document_id", [("-", "doc1"), ("dataset1", "-")])
+def test_delete_document_in_dataset_naming(dataset_id, document_id):
+    client.create_dataset("dataset1")
     with pytest.raises(NamingError):
-        client.delete_document_in_dataset("dataset1", "-")
+        client.delete_document_in_dataset(dataset_id, document_id)
 
 
 def test_list_all_classifiers():
-    # for initialisation of servers see top of document
-
-    expected_infos = [{"name": "classifier1"}, {"name": "classifier2"}, {"name": "classifier3"}]
+    expected_infos = [
+        ClassifierInfo.parse_obj({"name": "classifier1"}),
+        ClassifierInfo.parse_obj({"name": "classifier2"}),
+        ClassifierInfo.parse_obj({"name": "classifier3"}),
+    ]
 
     assert client.list_all_classifiers() == expected_infos
 
 
-def test_list_classifier():
-    assert client.list_classifier("classifier1") == {"name": "classifier1"}
+def test_get_classifier_info():
+    assert client.get_classifier_info("classifier1") == ClassifierInfo.parse_obj({"name": "classifier1"})
+
+
+def test_get_classifier_info_if_classifier_does_not_exist():
     with pytest.raises(DataNonExistentError):
-        client.list_classifier("classifier4")
+        client.get_classifier_info("classifier4")
 
+
+def test_get_classifier_info_naming():
     with pytest.raises(NamingError):
-        client.list_classifier("-")
+        client.get_classifier_info("-")
 
 
+# TODO: train for long time such that client.train_on_dataset("classifier1", "model1", "dataset1") is false
 def test_train_on_dataset():
-    client.delete_all_datasets()
     request = Document.Config.schema_extra["example"]
     client.create_document_in_dataset("dataset1", "document1", request, True)
     assert client.train_on_dataset("classifier1", "model1", "dataset1")
 
-    # TODO: train for long time such that client.train_on_dataset("classifier1", "model1", "dataset1") is false
 
+def test_train_on_dataset_if_classifier_does_not_exist():
+    request = Document.Config.schema_extra["example"]
+    client.create_document_in_dataset("dataset1", "document1", request, True)
     with pytest.raises(DataNonExistentError):
         client.train_on_dataset("classifier4", "model1", "dataset1")
 
+
+def test_train_on_dataset_if_dataset_does_not_exist():
     with pytest.raises(DataNonExistentError):
         client.train_on_dataset("classifier1", "model1", "dataset3")
 
-    with pytest.raises(NamingError):
-        client.train_on_dataset("-", "model1", "dataset3")
 
+@pytest.mark.parametrize("classifier_id, dataset_id", [("-", "doc1"), ("dataset1", "-")])
+def test_train_on_dataset_naming(classifier_id, dataset_id):
     with pytest.raises(NamingError):
-        client.train_on_dataset("classifier1", "model1", "-")
+        client.train_on_dataset(classifier_id, "model1", dataset_id)
 
 
 def test_predict_on_document():
-    client.delete_all_datasets()
     request = Document.Config.schema_extra["example"]
     client.create_document_in_dataset("dataset1", "document1", request, True)
     client.train_on_dataset("classifier1", "model1", "dataset1")
     predicted_doc = client.predict_on_document("classifier1", "model1", request)
     assert Document(**request) == predicted_doc
 
+
+def test_predict_on_document_if_classifier_does_not_exist():
+    request = Document.Config.schema_extra["example"]
     with pytest.raises(DataNonExistentError):
         client.predict_on_document("classifier4", "model1", request)
 
+
+def test_predict_on_document_if_model_does_not_exist():
+    request = Document.Config.schema_extra["example"]
     with pytest.raises(DataNonExistentError):
         client.predict_on_document("classifier1", "model4", request)
 
-    with pytest.raises(NamingError):
-        client.predict_on_document("-", "model1", request)
 
+@pytest.mark.parametrize("classifier_id, model_id", [("-", "model1"), ("classifier1", "-")])
+def test_train_on_dataset_naming(classifier_id, model_id):
+    request = Document.Config.schema_extra["example"]
     with pytest.raises(NamingError):
-        client.predict_on_document("classifier1", "-", request)
+        client.predict_on_document(classifier_id, model_id, request)
