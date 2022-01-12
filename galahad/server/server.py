@@ -1,5 +1,6 @@
 import asyncio
 import pathlib
+import re
 import shutil
 from concurrent.futures import ProcessPoolExecutor
 from typing import Callable
@@ -10,12 +11,17 @@ from starlette.background import BackgroundTasks
 from galahad.server.classifier import (Classifier, ClassifierStore,
                                        train_classifier)
 from galahad.server.dataclasses import *
-from galahad.server.util import (get_dataset_folder, get_datasets_folder,
-                                 get_document_path)
+from galahad.server.util import (NamingError, get_dataset_folder,
+                                 get_datasets_folder, get_document_path)
 
 # This regex forbids two consecutive dots so that ../foo does not work
 # to discovery files outside of the document folder
 PATH_REGEX = r"^[a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)*$"
+
+
+def check_naming_is_ok_regex(name: str):
+    if not re.match(PATH_REGEX, name):
+        raise NamingError(f'The name "{name}" is invalid. ' "Please look at the documentation for correct naming.")
 
 
 class GalahadServer(FastAPI):
@@ -38,6 +44,10 @@ class GalahadServer(FastAPI):
         _register_routes(self)
 
     def add_classifier(self, name: str, classifier: Classifier):
+        check_naming_is_ok_regex(name)
+
+        document_path = get_document_path(self.state.data_dir, "classifier", name)
+        document_path.unlink(missing_ok=True)
         self._classifier_store.add_classifier(name, classifier)
 
 
@@ -236,7 +246,9 @@ def _register_routes(app: FastAPI):
         },
         status_code=status.HTTP_200_OK,
     )
-    def get_classifier_info(classifier_id: str = Path(..., title="Identifier of the classifier whose info to query")):
+    def get_classifier_info(
+        classifier_id: str = Path(..., title="Identifier of the classifier whose info to query", regex=PATH_REGEX)
+    ):
         """Gets the classifier info for the requested classifier id if it exists."""
         classifier_info = classifier_store.get_classifier_info(classifier_id)
 
@@ -259,8 +271,8 @@ def _register_routes(app: FastAPI):
     )
     def train_on_dataset(
         background_tasks: BackgroundTasks,
-        classifier_id: str = Path(..., title="Name of the classifier that should be trained."),
-        model_id: str = Path(..., title="Name of the model that should be trained."),
+        classifier_id: str = Path(..., title="Name of the classifier that should be trained.", regex=PATH_REGEX),
+        model_id: str = Path(..., title="Name of the model that should be trained.", regex=PATH_REGEX),
         dataset_id: str = Path(
             ..., title="Identifier of the dataset that should be used for training", regex=PATH_REGEX
         ),
@@ -295,8 +307,10 @@ def _register_routes(app: FastAPI):
     )
     def predict_for_document(
         request: Document,
-        classifier_id: str = Path(..., title="Name of the classifier that should be used for prediction"),
-        model_id: str = Path(..., title="Identifier of the model that should be used for prediction"),
+        classifier_id: str = Path(
+            ..., title="Name of the classifier that should be used for prediction", regex=PATH_REGEX
+        ),
+        model_id: str = Path(..., title="Identifier of the model that should be used for prediction", regex=PATH_REGEX),
     ):
         classifier = classifier_store.get_classifier(classifier_id)
         if classifier is None:
