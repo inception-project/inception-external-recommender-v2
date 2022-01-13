@@ -111,12 +111,12 @@ class GalahadClient:
     def create_document_in_dataset(
         self, dataset_id: str, document_id: str, document: Document, auto_create_dataset=False
     ):
-        response = requests.put(f"{self.endpoint_url}/dataset/{dataset_id}/{document_id}", json=document)
+        response = requests.put(f"{self.endpoint_url}/dataset/{dataset_id}/{document_id}", json=document.dict())
         check_naming_is_ok(response.status_code, dataset_id=dataset_id, document_id=document_id)
         if response.status_code == 404:
             if auto_create_dataset:
                 self.create_dataset(dataset_id)
-                response = requests.put(f"{self.endpoint_url}/dataset/{dataset_id}/{document_id}", json=document)
+                response = requests.put(f"{self.endpoint_url}/dataset/{dataset_id}/{document_id}", json=document.dict())
             else:
                 raise DataNonExistentError(
                     f'The dataset for the given id: "{dataset_id}" does not exist. To create it, '
@@ -187,7 +187,8 @@ class GalahadClient:
         return True
 
     def predict_on_document(self, classifier_id: str, model_id: str, document: Document) -> Document:
-        response = requests.post(f"{self.endpoint_url}/classifier/{classifier_id}/{model_id}/predict", json=document)
+        response = requests.post(f"{self.endpoint_url}/classifier/{classifier_id}/{model_id}/predict",
+                                 json=document.dict())
         check_naming_is_ok(response.status_code, classifier_id=classifier_id, model_id=model_id)
         check_data_is_there(response.status_code, classifier_id=classifier_id, model_id=model_id)
         check_status_is_ok(200, response.status_code, classifier_id=classifier_id, model_id=model_id)

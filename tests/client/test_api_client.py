@@ -249,11 +249,11 @@ def test_train_on_dataset_naming(classifier_id, dataset_id):
 
 
 def test_predict_on_document():
-    request = Document.Config.schema_extra["example"]
-    client.create_document_in_dataset("dataset1", "document1", request, True)
-    client.train_on_dataset("classifier1", "model1", "dataset1")
-    predicted_doc = client.predict_on_document("classifier1", "model1", request)
-    assert Document(**request) == predicted_doc
+    doc = Document(**Document.Config.schema_extra["example"])
+    #client.create_document_in_dataset("dataset1", "document1", request, True)
+    #client.train_on_dataset("classifier1", "model1", "dataset1")
+    predicted_doc = client.predict_on_document("classifier1", "model1", doc)
+    assert doc == predicted_doc
 
 
 def test_predict_on_document_if_classifier_does_not_exist():
@@ -269,7 +269,7 @@ def test_predict_on_document_if_model_does_not_exist():
 
 
 @pytest.mark.parametrize("classifier_id, model_id", [("-", "model1"), ("classifier1", "-")])
-def test_train_on_dataset_naming(classifier_id, model_id):
+def test_predict_on_document_naming(classifier_id, model_id):
     request = Document.Config.schema_extra["example"]
     with pytest.raises(NamingError):
         client.predict_on_document(classifier_id, model_id, request)
