@@ -4,7 +4,7 @@ from typing import List
 
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
-from galahad.server.dataclasses import Document
+from galahad.server.dataclasses import Document, Annotation, Layer
 
 
 @dataclass
@@ -41,7 +41,7 @@ def build_sentence_classification_document(sentences: List[str], labels: List[st
 
 
 def build_span_classification_request(
-    sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
+        sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
 ) -> Document:
     text = " ".join(t for sentence in sentences for t in sentence)
     annotations = Annotations(text)
@@ -80,7 +80,7 @@ def build_span_classification_request(
 
 
 def build_span_classification_response(
-    original_doc: Document, spans: List[List[Span]] = None, version: int = 0
+        original_doc: Document, spans: List[List[Span]] = None, version: int = 0
 ) -> Document:
     annotated_doc = copy.deepcopy(original_doc)
     annotated_doc.version = version
@@ -109,3 +109,32 @@ def build_span_classification_response(
 
     annotated_doc.annotations = annotations.get_annotations()
     return annotated_doc
+
+
+def build_doc_from_tokens_and_text(text: str, sentences: List[List[str]]) -> Document:
+    sentence_list = []
+    token_list = []
+    position = 0
+    subtext = text
+    sentence_start = 0
+    for sentence in sentences:
+
+        for token in sentence:
+            start = subtext.find(token)
+            position = position + start
+            token_list.append(Annotation(**{"begin": position, "end": position + len(token), "features": {}}))
+            subtext = subtext[start + len(token):]
+            position = position + len(token)
+
+        sentence_list.append(Annotation(**{"begin": sentence_start, "end": position, "features": {}}))
+        sentence_start = position + 1
+
+    doc = Document(text=text,
+                   annotations={"t.token": token_list,
+                                "t.sentence": sentence_list},
+                   version=0)
+    return doc
+
+
+
+
