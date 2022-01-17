@@ -15,14 +15,19 @@ logger = logging.getLogger("galahad-client")
 def create_error_message(**kwargs) -> str:
     variables = kwargs
     if len(variables.keys()) == 0:
-        error_message = ""
+        return ""
     else:
-        error_message = "The problem appeared with the variables "
+        error_message = ["The problem appeared with the variables "]
         for variable_name in variables.keys():
-            error_message = error_message + variable_name + ': "' + variables[variable_name] + '" and '
-        error_message = error_message.removesuffix(" and ")
-        error_message = error_message + "."
-    return error_message
+            # variable_list.append(variable_name)
+            # variable_list.append(variables[variable_name])
+            error_message.append(f'"{variable_name}"')
+            error_message.append(":")
+            error_message.append(f'"{variables[variable_name]}"')
+            error_message.append("and")
+        del error_message[-1]
+
+    return " ".join(error_message)
 
 
 def check_data_is_there(given_status: int, **kwargs):
@@ -62,7 +67,7 @@ def check_naming_is_ok(given_status: int, **kwargs):
 
 class GalahadClient:
     def __init__(self, endpoint_url: str):
-        self.endpoint_url = endpoint_url.removesuffix("/")
+        self.endpoint_url = endpoint_url.rstrip("/")
 
     def is_connected(self) -> bool:
         response = requests.get(f"{self.endpoint_url}/ping")
@@ -109,7 +114,7 @@ class GalahadClient:
 
     # The new document of the same name will override an existing one!
     def create_document_in_dataset(
-        self, dataset_id: str, document_id: str, document: Document, auto_create_dataset=False
+            self, dataset_id: str, document_id: str, document: Document, auto_create_dataset=False
     ):
         response = requests.put(f"{self.endpoint_url}/dataset/{dataset_id}/{document_id}", json=document.dict())
         check_naming_is_ok(response.status_code, dataset_id=dataset_id, document_id=document_id)
