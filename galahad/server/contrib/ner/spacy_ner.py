@@ -37,4 +37,4 @@ class SpacyNerClassifier(Classifier):
         for named_entity in doc.ents:
             spans.append(Span(named_entity.start, named_entity.end, named_entity.label_))
 
-        return build_span_classification_response(document, [spans])
+        return build_span_classification_response(document, spans)

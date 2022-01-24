@@ -4,7 +4,7 @@ from typing import List
 
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
-from galahad.server.dataclasses import Document
+from galahad.server.dataclasses import Annotation, Document
 
 
 @dataclass
@@ -79,7 +79,35 @@ def build_span_classification_request(
     return document
 
 
-def build_span_classification_response(
+def build_span_classification_response(original_doc: Document, spans: List[Span] = None, version: int = 0) -> Document:
+    annotated_doc = copy.deepcopy(original_doc)
+    annotated_doc.version = version
+
+    assert AnnotationTypes.TOKEN.value in original_doc.annotations
+    assert AnnotationTypes.SENTENCE.value in original_doc.annotations
+
+    annotations = Annotations.from_dict(annotated_doc.text, annotated_doc.annotations)
+
+    sentences = annotations.select(AnnotationTypes.SENTENCE.value)
+
+    dummy_text_annotation = {"begin": sentences[0].begin, "end": sentences[-1].end}
+    all_tokens = annotations.select_covered(AnnotationTypes.TOKEN.value, Annotation(**dummy_text_annotation))
+    for span in spans:
+        first_token = all_tokens[span.begin]
+        last_token = all_tokens[span.end - 1]
+
+        annotations.create_annotation(
+            AnnotationTypes.ANNOTATION.value,
+            first_token.begin,
+            last_token.end,
+            {AnnotationFeatures.VALUE.value: span.value},
+        )
+
+    annotated_doc.annotations = annotations.get_annotations()
+    return annotated_doc
+
+
+def build_span_classification_response_per_sentence(
     original_doc: Document, spans: List[List[Span]] = None, version: int = 0
 ) -> Document:
     annotated_doc = copy.deepcopy(original_doc)
