@@ -1,3 +1,10 @@
+from pathlib import Path
+
+from datasets import load_dataset
+
+from galahad.client.formats import build_span_classification_request
+from galahad.server.annotations import Annotations
+from galahad.server.classifier import AnnotationTypes
 from galahad.server.contrib.pos.spacy_pos import SpacyPosClassifier
 from galahad.server.dataclasses import Document
 
@@ -31,19 +38,20 @@ def test_spacy_pos():
     doc = Document(**{"text": text, "version": 0, "annotations": annotations})
     predicted_doc = clf.predict("spacy", doc)
 
-    annotations["t.annotation"] = [
-        {"begin": 0, "end": 1, "features": {"f.value": "PRP"}},
-        {"begin": 2, "end": 4, "features": {"f.value": "VBP"}},
-        {"begin": 5, "end": 12, "features": {"f.value": "JJ"}},
-        {"begin": 12, "end": 13, "features": {"f.value": "."}},
-        {"begin": 14, "end": 19, "features": {"f.value": "NNP"}},
-        {"begin": 20, "end": 28, "features": {"f.value": "VBD"}},
-        {"begin": 29, "end": 33, "features": {"f.value": "PDT"}},
-        {"begin": 34, "end": 35, "features": {"f.value": "DT"}},
-        {"begin": 36, "end": 47, "features": {"f.value": "RB"}},
-        {"begin": 48, "end": 55, "features": {"f.value": "VBN"}},
-        {"begin": 56, "end": 60, "features": {"f.value": "NN"}},
-        {"begin": 60, "end": 61, "features": {"f.value": "."}},
-    ]
+    assert len(predicted_doc.annotations["t.annotation"]) == len(annotations["t.token"])
 
-    assert predicted_doc == Document(**{"text": text, "version": 0, "annotations": annotations})
+
+def test_spacy_pos_predict(tmpdir):
+    model_directory = Path(tmpdir)
+
+    dataset = load_dataset("conll2003", split="validation")
+
+    classifier = SpacyPosClassifier("en_core_web_sm")
+    classifier._model_directory = model_directory
+    predict_request = build_span_classification_request(dataset["tokens"])
+    response = classifier.predict("spacy", predict_request)
+
+    predicted_annotations = Annotations.from_dict(response.text, response.annotations)
+    predictions = predicted_annotations.select(AnnotationTypes.ANNOTATION.value)
+    predicted_labels = [p.features[classifier._target_feature] for p in predictions]
+    assert len(predicted_labels) == sum(len(sentence) for sentence in dataset["tokens"])

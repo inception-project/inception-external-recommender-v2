@@ -6,9 +6,10 @@ try:
 except ImportError as error:
     print("Could not import 'spacy', please install it manually via 'pip install spacy'")
 
-from galahad.client.formats import Span, build_span_classification_response
+from galahad.client.formats import build_token_labeling_response
 from galahad.server.annotations import Annotations
-from galahad.server.classifier import AnnotationTypes, Classifier
+from galahad.server.classifier import (AnnotationFeatures, AnnotationTypes,
+                                       Classifier)
 from galahad.server.dataclasses import Document
 
 
@@ -17,6 +18,7 @@ class SpacyPosClassifier(Classifier):
         super().__init__()
 
         self._token_type = AnnotationTypes.TOKEN.value
+        self._target_feature = AnnotationFeatures.VALUE.value
 
         self._model = spacy.load(model_name, disable=["parser"])
 
@@ -32,6 +34,6 @@ class SpacyPosClassifier(Classifier):
 
         list_of_pos_tags = []
         for i in range(len(spacy_doc)):
-            list_of_pos_tags.append(Span(i, i + 1, spacy_doc[i].tag_))
+            list_of_pos_tags.append(spacy_doc[i].tag_)
 
-        return build_span_classification_response(document, list_of_pos_tags)
+        return build_token_labeling_response(document, list_of_pos_tags)

@@ -79,6 +79,28 @@ def build_span_classification_request(
     return document
 
 
+def build_token_labeling_response(original_doc: Document, labels: List[str] = None, version: int = 0) -> Document:
+    annotated_doc = copy.deepcopy(original_doc)
+    annotated_doc.version = version
+
+    assert AnnotationTypes.TOKEN.value in original_doc.annotations
+    assert AnnotationTypes.SENTENCE.value in original_doc.annotations
+    assert len(original_doc.annotations["t.token"]) == len(labels)
+
+    annotations = Annotations.from_dict(annotated_doc.text, annotated_doc.annotations)
+
+    for token, label in zip(original_doc.annotations["t.token"], labels):
+        annotations.create_annotation(
+            AnnotationTypes.ANNOTATION.value,
+            token.begin,
+            token.end,
+            {AnnotationFeatures.VALUE.value: label},
+        )
+
+    annotated_doc.annotations = annotations.get_annotations()
+    return annotated_doc
+
+
 def build_span_classification_response(original_doc: Document, spans: List[Span] = None, version: int = 0) -> Document:
     annotated_doc = copy.deepcopy(original_doc)
     annotated_doc.version = version

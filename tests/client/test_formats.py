@@ -1,7 +1,8 @@
 from galahad.client.formats import (
     Span, build_sentence_classification_document,
     build_span_classification_request, build_span_classification_response,
-    build_span_classification_response_per_sentence)
+    build_span_classification_response_per_sentence,
+    build_token_labeling_response)
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
 from galahad.server.dataclasses import Document
@@ -66,6 +67,54 @@ def test_span_sentence_classification_request():
     assert third_ner.features[value_feature] == "ORG"
     assert third_ner.begin == 59
     assert third_ner.end == 71
+
+
+def test_build_token_labeling_response():
+    text = "I am jealous. Peter received such a beautifully crafted gift."
+
+    annotations = {
+        "t.token": [
+            {"begin": 0, "end": 1},
+            {"begin": 2, "end": 4},
+            {"begin": 5, "end": 12},
+            {"begin": 12, "end": 13},
+            {"begin": 14, "end": 19},
+            {"begin": 20, "end": 28},
+            {"begin": 29, "end": 33},
+            {"begin": 34, "end": 35},
+            {"begin": 36, "end": 47},
+            {"begin": 48, "end": 55},
+            {"begin": 56, "end": 60},
+            {"begin": 60, "end": 61},
+        ],
+        "t.sentence": [
+            {"begin": 0, "end": 13},
+            {"begin": 14, "end": 62},
+        ],
+    }
+
+    doc = Document(**{"text": text, "version": 0, "annotations": annotations})
+
+    labels = ["PRP", "VBP", "JJ", ".", "NNP", "VBD", "PDT", "DT", "RB", "VBN", "NN", "."]
+
+    annotations["t.annotation"] = [
+        {"begin": 0, "end": 1, "features": {"f.value": "PRP"}},
+        {"begin": 2, "end": 4, "features": {"f.value": "VBP"}},
+        {"begin": 5, "end": 12, "features": {"f.value": "JJ"}},
+        {"begin": 12, "end": 13, "features": {"f.value": "."}},
+        {"begin": 14, "end": 19, "features": {"f.value": "NNP"}},
+        {"begin": 20, "end": 28, "features": {"f.value": "VBD"}},
+        {"begin": 29, "end": 33, "features": {"f.value": "PDT"}},
+        {"begin": 34, "end": 35, "features": {"f.value": "DT"}},
+        {"begin": 36, "end": 47, "features": {"f.value": "RB"}},
+        {"begin": 48, "end": 55, "features": {"f.value": "VBN"}},
+        {"begin": 56, "end": 60, "features": {"f.value": "NN"}},
+        {"begin": 60, "end": 61, "features": {"f.value": "."}},
+    ]
+
+    assert build_token_labeling_response(doc, labels, version=0) == Document(
+        **{"text": text, "version": 0, "annotations": annotations}
+    )
 
 
 def test_span_sentence_classification_response():
