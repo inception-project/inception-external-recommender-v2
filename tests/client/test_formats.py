@@ -1,10 +1,10 @@
 from galahad.client.formats import (Span,
                                     build_sentence_classification_document,
                                     build_span_classification_request,
-                                    build_span_classification_response)
+                                    build_span_classification_response, build_doc_from_tokens_and_text)
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
-from galahad.server.dataclasses import Document
+from galahad.server.dataclasses import Document, Annotation
 
 
 def test_build_sentence_classification_request():
@@ -118,3 +118,33 @@ def test_span_sentence_classification_response():
     assert third_ner.features[value_feature] == "TM"
     assert third_ner.begin == 18
     assert third_ner.end == 29
+
+
+def test_build_doc_from_tokens_and_text():
+    text = "Joe Biden, the super star! - Indeed, he steals your car."
+    sentences = [["Joe", "Biden", ",", "the", "super", "star", "!"],
+                 ["-", "Indeed", ",", "he", "steals", "your", "car", "."]]
+
+    expected_tokens = [Annotation(**{"begin": 0, "end": 3, "features": {}}),
+                       Annotation(**{"begin": 4, "end": 9, "features": {}}),
+                       Annotation(**{"begin": 9, "end": 10, "features": {}}),
+                       Annotation(**{"begin": 11, "end": 14, "features": {}}),
+                       Annotation(**{"begin": 15, "end": 20, "features": {}}),
+                       Annotation(**{"begin": 21, "end": 25, "features": {}}),
+                       Annotation(**{"begin": 25, "end": 26, "features": {}}),
+                       Annotation(**{"begin": 27, "end": 28, "features": {}}),
+                       Annotation(**{"begin": 29, "end": 35, "features": {}}),
+                       Annotation(**{"begin": 35, "end": 36, "features": {}}),
+                       Annotation(**{"begin": 37, "end": 39, "features": {}}),
+                       Annotation(**{"begin": 40, "end": 46, "features": {}}),
+                       Annotation(**{"begin": 47, "end": 51, "features": {}}),
+                       Annotation(**{"begin": 52, "end": 55, "features": {}}),
+                       Annotation(**{"begin": 55, "end": 56, "features": {}})]
+    expected_sentences = [Annotation(**{"begin": 0, "end": 26, "features": {}}),
+                          Annotation(**{"begin": 27, "end": 56, "features": {}})]
+    expected_doc = Document(text=text,
+                            annotations={"t.token": expected_tokens,"t.sentence": expected_sentences},
+                            version=0)
+    doc = build_doc_from_tokens_and_text(text, sentences)
+
+    assert doc == expected_doc
