@@ -250,8 +250,8 @@ def test_train_on_dataset_naming(classifier_id, dataset_id):
 
 def test_predict_on_document():
     doc = Document(**Document.Config.schema_extra["example"])
-    #client.create_document_in_dataset("dataset1", "document1", request, True)
-    #client.train_on_dataset("classifier1", "model1", "dataset1")
+    # client.create_document_in_dataset("dataset1", "document1", request, True)
+    # client.train_on_dataset("classifier1", "model1", "dataset1")
     predicted_doc = client.predict_on_document("classifier1", "model1", doc)
     assert doc == predicted_doc
 
