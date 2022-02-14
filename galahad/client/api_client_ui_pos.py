@@ -4,7 +4,6 @@ import gradio as gr
 from nltk.tokenize import word_tokenize
 
 client = api_client.GalahadClient("http://127.0.0.1:8000")
-peter = client.list_all_classifiers()
 models = [model.name for model in client.list_all_classifiers()]
 
 
@@ -21,7 +20,7 @@ def predict(model, sentence):
         if end >= begin:
             ret.append((annotated_doc["text"][begin:end], None))
         begin = annotation["end"]
-        ret.append((annotated_doc["text"][annotation["begin"] : annotation["end"]], annotation["features"]["f.value"]))
+        ret.append((annotated_doc["text"][annotation["begin"]: annotation["end"]], annotation["features"]["f.value"]))
     ret.append((annotated_doc["text"][begin:], None))
     return ret
 
@@ -34,13 +33,13 @@ iface = gr.Interface(
     ],
     outputs=gr.outputs.HighlightedText(),
     examples=[
-        ["SpacyNER", "Neil Armstrong was a NASA astronaut"],
-        ["SpacyNER", "The jazz musician Louis Armstrong was born in New Orleans"],
-        ["SpacyNER", "Lance Armstrong won the Tour de France several times"],
+        [models[0], "I love chocolate"],
+        [models[0], "Peter received such a beautifully crafted gift"],
+        [models[0], "Strawberries are sweet and red fruits"],
     ],
-    title="Named Entity Recognition",
-    description="Named Entity Recognition (NER) is the task of identifying persons, places, "
-    "institutions etc. in a given sentence.",
+    title="Part-of-Speech Tagging",
+    description="Part-of-Speech Tagging (POS-tagging) is the task of assigning each word in a sentence " 
+                "its part-of-speech tag, e.g. noun, verb or adjective.",
     allow_screenshot=False,
     allow_flagging="never",
 )
