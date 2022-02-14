@@ -7,6 +7,7 @@ from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
 from galahad.server.dataclasses import Annotation, Document
 
 
+
 @dataclass
 class Span:
     begin: int
@@ -41,7 +42,7 @@ def build_sentence_classification_document(sentences: List[str], labels: List[st
 
 
 def build_span_classification_request(
-    sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
+        sentences: List[List[str]], spans: List[List[Span]] = None, version: int = 0
 ) -> Document:
     text = " ".join(t for sentence in sentences for t in sentence)
     annotations = Annotations(text)
