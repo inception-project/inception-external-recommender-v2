@@ -1,28 +1,23 @@
 import api_client
-import formats
 import gradio as gr
-from nltk.tokenize import word_tokenize
+
+from galahad.client.gradio_utils import annotation_to_gradio, input_to_doc
 
 client = api_client.GalahadClient("http://127.0.0.1:8000")
 models = [model.name for model in client.list_all_classifiers()]
 
 
+# same function as in api_client_ui_pos
+
+
 def predict(model, sentence):
-    tokens = word_tokenize(sentence)
-    # The following method works (cf. the test in test_formats). The problem is that HighlightedText uses " ".join so
-    # the displayed result is wrong, but the internal calculations are all correct.
-    doc = formats.build_doc_from_tokens_and_text(sentence, [tokens])
-    annotated_doc = client.predict_on_document(model, "PLACEHOLDER", doc)
-    ret = []
-    begin = 0
-    for annotation in annotated_doc["annotations"]["t.annotation"]:
-        end = annotation["begin"] - 1
-        if end >= begin:
-            ret.append((annotated_doc["text"][begin:end], None))
-        begin = annotation["end"]
-        ret.append((annotated_doc["text"][annotation["begin"]: annotation["end"]], annotation["features"]["f.value"]))
-    ret.append((annotated_doc["text"][begin:], None))
-    return ret
+    # The following method works. The problem is that HighlightedText uses " ".join to
+    # concatenate text units with not-None and None features.
+    # The displayed result is wrong, but the internal calculations are all correct.
+    # Example: "Joe Biden, a child of Delaware." -> "Joe Biden , a child of Delaware ." and "Joe Biden" and "Delaware"
+    # are marked as named entities.
+    annotated_doc = client.predict_on_document(model, "PLACEHOLDER", input_to_doc(sentence))
+    return annotation_to_gradio(annotated_doc)
 
 
 iface = gr.Interface(
@@ -39,9 +34,13 @@ iface = gr.Interface(
     ],
     title="Named Entity Recognition",
     description="Named Entity Recognition (NER) is the task of identifying persons, places, "
-                "institutions etc. in a given sentence.",
+    "institutions etc. in a given sentence.",
     allow_screenshot=False,
     allow_flagging="never",
 )
 
-iface.launch()
+# Before you start this program make sure to run
+# uvicorn main:ner_server
+# in the terminal
+if __name__ == "__main__":
+    iface.launch()

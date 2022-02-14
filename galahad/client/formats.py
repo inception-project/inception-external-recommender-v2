@@ -1,6 +1,6 @@
 import copy
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
