@@ -4,7 +4,7 @@ from typing import List
 
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
-from galahad.server.dataclasses import Annotation, Document, Layer
+from galahad.server.dataclasses import Annotation, Document
 
 
 @dataclass
