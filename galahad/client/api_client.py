@@ -114,7 +114,7 @@ class GalahadClient:
 
     # The new document of the same name will override an existing one!
     def create_document_in_dataset(
-            self, dataset_id: str, document_id: str, document: Document, auto_create_dataset=False
+        self, dataset_id: str, document_id: str, document: Document, auto_create_dataset=False
     ):
         response = requests.put(f"{self.endpoint_url}/dataset/{dataset_id}/{document_id}", json=document.dict())
         check_naming_is_ok(response.status_code, dataset_id=dataset_id, document_id=document_id)
@@ -192,8 +192,9 @@ class GalahadClient:
         return True
 
     def predict_on_document(self, classifier_id: str, model_id: str, document: Document) -> Document:
-        response = requests.post(f"{self.endpoint_url}/classifier/{classifier_id}/{model_id}/predict",
-                                 json=document.dict())
+        response = requests.post(
+            f"{self.endpoint_url}/classifier/{classifier_id}/{model_id}/predict", json=document.dict()
+        )
         check_naming_is_ok(response.status_code, classifier_id=classifier_id, model_id=model_id)
         check_data_is_there(response.status_code, classifier_id=classifier_id, model_id=model_id)
         check_status_is_ok(200, response.status_code, classifier_id=classifier_id, model_id=model_id)
