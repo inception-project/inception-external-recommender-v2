@@ -7,15 +7,7 @@ client = api_client.GalahadClient("http://127.0.0.1:8000")
 models = [model.name for model in client.list_all_classifiers()]
 
 
-# same function as in api_client_ui_pos
-
-
 def predict(model, sentence):
-    # The following method works. The problem is that HighlightedText uses " ".join to
-    # concatenate text units with not-None and None features.
-    # The displayed result is wrong, but the internal calculations are all correct.
-    # Example: "Joe Biden, a child of Delaware." -> "Joe Biden , a child of Delaware ." and "Joe Biden" and "Delaware"
-    # are marked as named entities.
     annotated_doc = client.predict_on_document(model, "PLACEHOLDER", input_to_doc(sentence))
     return annotation_to_gradio(annotated_doc)
 
@@ -28,19 +20,19 @@ iface = gr.Interface(
     ],
     outputs=gr.outputs.HighlightedText(),
     examples=[
-        [models[0], "Neil Armstrong was a NASA astronaut"],
-        [models[0], "The jazz musician Louis Armstrong was born in New Orleans"],
-        [models[0], "Lance Armstrong won the Tour de France several times"],
+        [models[0], "I love chocolate"],
+        [models[0], "Peter received such a beautifully crafted gift"],
+        [models[0], "Strawberries are sweet and red fruits"],
     ],
-    title="Named Entity Recognition",
-    description="Named Entity Recognition (NER) is the task of identifying persons, places, "
-    "institutions etc. in a given sentence.",
+    title="Part-of-Speech Tagging",
+    description="Part-of-Speech Tagging (POS-tagging) is the task of assigning each word in a sentence "
+    "its part-of-speech tag, e.g. noun, verb or adjective.",
     allow_screenshot=False,
     allow_flagging="never",
 )
 
 # Before you start this program make sure to run
-# uvicorn main:ner_server
+# uvicorn main:pos_server
 # in the terminal
 if __name__ == "__main__":
     iface.launch()
