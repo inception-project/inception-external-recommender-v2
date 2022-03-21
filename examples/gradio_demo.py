@@ -103,7 +103,7 @@ def ner_demo() -> gr.Interface:
 # uvicorn main:pos_server
 # in the terminal
 if __name__ == "__main__":
-    nltk.download('punkt')
+    nltk.download("punkt")
 
     parser = argparse.ArgumentParser(description="Run the Galahad Gradio demo.")
     parser.add_argument("task", help="Task to run the demo for (pos|ner)")

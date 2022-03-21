@@ -10,12 +10,7 @@ except ImportError as error:
 
 from galahad.client.formats import build_sentence_classification_document
 from galahad.server.annotations import Annotations
-from galahad.server.classifier import (
-    AnnotationFeatures,
-    AnnotationTypes,
-    Classifier,
-    Remapper,
-)
+from galahad.server.classifier import AnnotationFeatures, AnnotationTypes, Classifier
 from galahad.server.dataclasses import Document
 
 logger = logging.getLogger(__name__)
