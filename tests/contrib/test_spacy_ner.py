@@ -5,7 +5,7 @@ from datasets import load_dataset
 from galahad.client.formats import build_span_classification_request
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationTypes
-from galahad.server.contrib.ner.spacy_ner import SpacyNerClassifier
+from galahad.server.contrib.ner.spacy_ner import SpacyNerTagger
 
 
 def test_spacy_ner_predict(tmpdir):
@@ -13,7 +13,7 @@ def test_spacy_ner_predict(tmpdir):
 
     dataset = load_dataset("conll2003", split="validation")
 
-    classifier = SpacyNerClassifier("en_core_web_sm")
+    classifier = SpacyNerTagger("en_core_web_sm")
     classifier._model_directory = model_directory
     predict_request = build_span_classification_request(dataset["tokens"])
     response = classifier.predict("spacy", predict_request)
