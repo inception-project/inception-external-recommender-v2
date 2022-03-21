@@ -12,7 +12,7 @@ from galahad.server.classifier import AnnotationFeatures, AnnotationTypes, Class
 from galahad.server.dataclasses import Document
 
 
-class SpacyPosClassifier(Classifier):
+class SpacyPosTagger(Classifier):
     def __init__(self, model_name: str):
         super().__init__()
 
