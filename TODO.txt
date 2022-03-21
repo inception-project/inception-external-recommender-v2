@@ -1,6 +1,0 @@
-- gradio
-- docker
-
-- save versions in extra file to not always read it in
-- locking on functions
-- Add client
