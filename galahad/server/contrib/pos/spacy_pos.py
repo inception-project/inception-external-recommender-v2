@@ -8,8 +8,7 @@ except ImportError as error:
 
 from galahad.client.formats import build_token_labeling_response
 from galahad.server.annotations import Annotations
-from galahad.server.classifier import (AnnotationFeatures, AnnotationTypes,
-                                       Classifier)
+from galahad.server.classifier import AnnotationFeatures, AnnotationTypes, Classifier
 from galahad.server.dataclasses import Document
 
 

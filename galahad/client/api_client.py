@@ -6,8 +6,12 @@ from requests import Response
 
 from galahad.server import server
 from galahad.server.dataclasses import ClassifierInfo, Document
-from galahad.server.util import (DataNonExistentError, NamingError,
-                                 ResponseError, StatusCodeError)
+from galahad.server.util import (
+    DataNonExistentError,
+    NamingError,
+    ResponseError,
+    StatusCodeError,
+)
 
 logger = logging.getLogger("galahad-client")
 

@@ -9,8 +9,7 @@ from fastapi.testclient import TestClient
 from galahad.server import GalahadServer
 from galahad.server.classifier import Classifier
 from galahad.server.dataclasses import Document, DocumentList
-from galahad.server.util import (NamingError, get_dataset_folder,
-                                 get_document_path)
+from galahad.server.util import NamingError, get_dataset_folder, get_document_path
 from tests.fixtures import TestClassifier
 
 tmpdir: Optional[Path] = None
