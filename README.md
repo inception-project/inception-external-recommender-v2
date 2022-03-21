@@ -24,6 +24,22 @@ Add models to your server and then run via
 Add a external recommender V2 to INCEpTION, check the server connection and then select a classifer
 from the list. You are now ready to go!
 
+## Examples
+
+### Gradio
+
+After starting a Galahad instance, you can visualize the predictions of pretrained models via
+[Gradio](https://gradio.app/). For that, just run 
+
+    examples/gradio_demo.py TASK_NAME
+
+We currently support part-of-speech tagging (`pos`) and named entity recognition (`ner`).
+
+<p align="center">
+  <img src="img/gradio_ner.png" alt="Gradio named entity recognition demo"/>
+</p>
+
+
 ## API documentation
 
 When running, you can view the API documentation on http://localhost:8000/redoc .

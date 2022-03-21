@@ -16,10 +16,14 @@ sortedcontainers = "^2.4.0"
 [tool.poetry.group.contrib.dependencies]
 scikit-learn = "^1.0.2"
 spacy = "^3.2.3"
+nltk = "^3.7"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.1.1"
 datasets = "^2.0.0"
+
+[tool.poetry.group.demo.dependencies]
+gradio = "^2.8.12"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.1.0"
@@ -27,8 +31,8 @@ isort = "^5.10.1"
 poethepoet = "^0.13.1"
 
 [tool.poe.tasks]
-black = "black -l 120 galahad/ tests/ scripts/"
-isort = "isort --profile black galahad/ tests/ scripts/"
+black = "black -l 120 galahad/ tests/ scripts/ examples/"
+isort = "isort --profile black galahad/ tests/ scripts/ examples/"
 format = ["black", "isort"]
 
 [tool.isort]
