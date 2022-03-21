@@ -1,4 +1,4 @@
-from galahad.client.formats import (
+from galahad.formats import (
     Span,
     build_doc_from_tokens_and_text,
     build_sentence_classification_document,

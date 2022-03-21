@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from galahad.client.api_client import GalahadClient
+from galahad.client import GalahadClient
 from galahad.server import GalahadServer
 from galahad.server.dataclasses import ClassifierInfo, Document
 from galahad.server.util import DataNonExistentError, NamingError

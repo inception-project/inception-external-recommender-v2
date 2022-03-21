@@ -4,7 +4,7 @@ import pytest
 import spacy
 from datasets import load_dataset
 
-from galahad.client.formats import build_span_classification_request
+from galahad.formats import build_span_classification_request
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationTypes
 from galahad.server.contrib.pos.spacy_pos import SpacyPosTagger

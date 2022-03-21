@@ -6,7 +6,7 @@ try:
 except ImportError as error:
     print("Could not import 'spacy', please install it manually via 'pip install spacy'")
 
-from galahad.client.formats import Span, build_span_classification_response
+from galahad.formats import Span, build_span_classification_response
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes, Classifier
 from galahad.server.dataclasses import Document

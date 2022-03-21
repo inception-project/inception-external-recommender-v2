@@ -5,8 +5,8 @@ import gradio as gr
 import nltk
 from nltk import word_tokenize
 
-from galahad.client import formats
-from galahad.client.api_client import GalahadClient
+from galahad import formats
+from galahad.client import GalahadClient
 from galahad.server.dataclasses import Document
 
 

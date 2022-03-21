@@ -8,7 +8,7 @@ try:
 except ImportError as error:
     print("Could not import 'sklearn', please install it manually via 'pip install scikit-learn'")
 
-from galahad.client.formats import build_sentence_classification_document
+from galahad.formats import build_sentence_classification_document
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes, Classifier
 from galahad.server.dataclasses import Document
