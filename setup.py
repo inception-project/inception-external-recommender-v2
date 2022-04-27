@@ -18,7 +18,7 @@ install_requires = [
     "sortedcontainers>==2.4.*",
     "joblib==1.1.*",
     "filelock==3.6.*",
-    "requests==2.27.*"
+    "requests==2.27.*",
 ]
 
 demo_dependencies = [
