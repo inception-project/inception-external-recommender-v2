@@ -52,5 +52,6 @@ created and activated by
 
     python3 -m venv venv
     source venv/bin/activate
-    pip install -e .[dev,test]
+    pip install -e .[all]
+    make get_test_dependencies
 
