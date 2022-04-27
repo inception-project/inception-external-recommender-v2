@@ -1,12 +1,9 @@
-from galahad.formats import (
-    Span,
-    build_doc_from_tokens_and_text,
-    build_sentence_classification_document,
-    build_span_classification_request,
-    build_span_classification_response,
-    build_span_classification_response_per_sentence,
-    build_token_labeling_response,
-)
+from galahad.formats import (Span, build_doc_from_tokens_and_text,
+                             build_sentence_classification_document,
+                             build_span_classification_request,
+                             build_span_classification_response,
+                             build_span_classification_response_per_sentence,
+                             build_token_labeling_response)
 from galahad.server.annotations import Annotations
 from galahad.server.classifier import AnnotationFeatures, AnnotationTypes
 from galahad.server.dataclasses import Annotation, Document

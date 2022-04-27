@@ -8,14 +8,11 @@ from typing import Callable
 from fastapi import FastAPI, HTTPException, Path, Response, status
 from starlette.background import BackgroundTasks
 
-from galahad.server.classifier import Classifier, ClassifierStore, train_classifier
+from galahad.server.classifier import (Classifier, ClassifierStore,
+                                       train_classifier)
 from galahad.server.dataclasses import *
-from galahad.server.util import (
-    NamingError,
-    get_dataset_folder,
-    get_datasets_folder,
-    get_document_path,
-)
+from galahad.server.util import (get_dataset_folder, get_datasets_folder,
+                                 get_document_path)
 
 # This regex forbids two consecutive dots so that ../foo does not work
 # to discovery files outside of the document folder
@@ -24,7 +21,7 @@ PATH_REGEX = r"^[a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)*$"
 
 def check_naming_is_ok_regex(name: str):
     if not re.match(PATH_REGEX, name):
-        raise NamingError(f'The name "{name}" is invalid. ' "Please look at the documentation for correct naming.")
+        raise ValueError(f'The name "{name}" is invalid. ' "Please look at the documentation for correct naming.")
 
 
 class GalahadServer(FastAPI):

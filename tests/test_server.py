@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from galahad.server import GalahadServer
 from galahad.server.classifier import Classifier
 from galahad.server.dataclasses import Document, DocumentList
-from galahad.server.util import NamingError, get_dataset_folder, get_document_path
+from galahad.server.util import get_dataset_folder, get_document_path
 from tests.fixtures import TestClassifier
 
 tmpdir: Optional[Path] = None
@@ -213,9 +213,9 @@ def test_delete_document_from_dataset_when_document_exists(client: TestClient):
 
 def test_create_classifier_with_invalid_name(server: GalahadServer):
     test_classifier = TestClassifier()
-    with pytest.raises(NamingError):
+    with pytest.raises(ValueError):
         server.add_classifier("/this/is/a/path", test_classifier)
-    with pytest.raises(NamingError):
+    with pytest.raises(ValueError):
         server.add_classifier("-", test_classifier)
 
 
