@@ -23,6 +23,7 @@ install_requires = [
 
 demo_dependencies = [
     "gradio==2.9.*",
+    "nltk==3.7"
 ]
 
 test_dependencies = ["pytest", "datasets"]
@@ -49,6 +50,7 @@ extras = {
     "contrib": contrib_dependencies,
     "spacy": spacy_dependencies,
     "sklearn": sklearn_dependencies,
+    "demo": demo_dependencies
 }
 
 all_dependencies = []
