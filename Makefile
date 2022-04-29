@@ -14,3 +14,6 @@ inception_test: get_test_dependencies
 
 get_test_dependencies:
 	python -m spacy download en_core_web_sm
+
+build:
+	python -m build

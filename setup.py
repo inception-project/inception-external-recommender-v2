@@ -13,22 +13,22 @@ AUTHOR = "Jan-Christoph Klie"
 REQUIRES_PYTHON = ">=3.7.0"
 
 install_requires = [
-    "fastapi==0.75.*",
-    "uvicorn[standard]==0.17.*",
-    "sortedcontainers>==2.4.*",
-    "joblib==1.1.*",
-    "filelock==3.6.*",
-    "requests==2.27.*",
+    "fastapi>=0.75.2",
+    "uvicorn[standard]>=0.17.6",
+    "sortedcontainers>=2.4.0",
+    "joblib>=1.1.0",
+    "filelock>=3.6.0",
+    "requests>=2.27.1",
 ]
 
 demo_dependencies = [
-    "gradio==2.9.*",
-    "nltk==3.7"
+    "gradio>=2.9.4",
+    "nltk>=3.7"
 ]
 
 test_dependencies = ["pytest", "datasets"]
 
-dev_dependencies = ["black", "isort"]
+dev_dependencies = ["black", "isort", "build", "twine"]
 
 doc_dependencies = ["sphinx", "sphinx-autodoc-typehints", "sphinx-rtd-theme"]
 
@@ -36,7 +36,7 @@ spacy_dependencies = [
     "spacy==3.2.*",
 ]
 
-sklearn_dependencies = ["scikit-learn>=0.24.*"]
+sklearn_dependencies = ["scikit-learn>=1.0.2"]
 
 contrib_dependencies = []
 contrib_dependencies.extend(spacy_dependencies)
