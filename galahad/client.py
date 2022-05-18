@@ -1,13 +1,13 @@
-import json
 import logging
 from typing import Dict, List
 
 import requests
+from requests_toolbelt import sessions
 
 from galahad.server import server
 from galahad.server.dataclasses import ClassifierInfo, Document
 
-logger = logging.getLogger("galahad-client")
+logger = logging.getLogger("galahad.client")
 
 
 class HTTPError(Exception):
@@ -79,9 +79,18 @@ def check_naming_is_ok(given_status: int, **kwargs):
 class GalahadClient:
     def __init__(self, endpoint_url: str):
         self.endpoint_url = endpoint_url.rstrip("/")
+        self._session = self._build_session()
+
+    def start_session(self) -> requests.Session:
+        self._session = self._build_session()
+        return self._session
+
+    def _build_session(self) -> requests.Session:
+        session = sessions.BaseUrlSession(self.endpoint_url)
+        return session
 
     def is_connected(self) -> bool:
-        response = requests.get(f"{self.endpoint_url}/ping")
+        response = self._session.get("/ping")
         if response.status_code != 200:
             logger.info("StatusCodeError")
             return False
@@ -92,7 +101,7 @@ class GalahadClient:
 
     # output is sorted by dataset name
     def list_datasets(self) -> List[str]:
-        response = requests.get(f"{self.endpoint_url}/dataset")
+        response = self._session.get("/dataset")
         check_response(response)
         return response.json()["names"]
 
@@ -101,7 +110,7 @@ class GalahadClient:
         return dataset_id in self.list_datasets()
 
     def create_dataset(self, dataset_id: str):
-        response = requests.put(f"{self.endpoint_url}/dataset/{dataset_id}", {})
+        response = self._session.put(f"/dataset/{dataset_id}", {})
         check_naming_is_ok(response.status_code, dataset_id=dataset_id)
         if response.status_code == 409:
             logger.info(f'Dataset with id "{dataset_id}" already exists')
@@ -110,7 +119,7 @@ class GalahadClient:
         check_response(response)
 
     def delete_dataset(self, dataset_id: str):
-        response = requests.delete(f"{self.endpoint_url}/dataset/{dataset_id}")
+        response = self._session.delete(f"/dataset/{dataset_id}")
         check_naming_is_ok(response.status_code, dataset_id=dataset_id)
         if response.status_code == 404:
             logger.info(f'Dataset with id "{dataset_id}" does not exist')
@@ -129,13 +138,13 @@ class GalahadClient:
     def create_document_in_dataset(
         self, dataset_id: str, document_id: str, document: Document, auto_create_dataset=False
     ):
-        response = requests.put(f"{self.endpoint_url}/dataset/{dataset_id}/{document_id}", json=document.dict())
+        response = self._session.put(f"/dataset/{dataset_id}/{document_id}", json=document.dict())
         check_naming_is_ok(response.status_code, dataset_id=dataset_id, document_id=document_id)
 
         if response.status_code == 404:
             if auto_create_dataset:
                 self.create_dataset(dataset_id)
-                response = requests.put(f"{self.endpoint_url}/dataset/{dataset_id}/{document_id}", json=document.dict())
+                response = self._session.put(f"/dataset/{dataset_id}/{document_id}", json=document.dict())
             else:
                 raise ValueError(
                     f'The dataset for the given id: "{dataset_id}" does not exist. To create it, '
@@ -146,7 +155,7 @@ class GalahadClient:
 
     # result is sorted by doc id
     def list_documents_in_dataset(self, dataset_id) -> Dict[str, int]:
-        response = requests.get(f"{self.endpoint_url}/dataset/{dataset_id}")
+        response = self._session.get(f"/dataset/{dataset_id}")
         check_naming_is_ok(response.status_code, dataset_id=dataset_id)
         check_response(response)
 
@@ -158,7 +167,7 @@ class GalahadClient:
 
     def delete_document_in_dataset(self, dataset_id: str, document_id: str):
         if self.dataset_contains_document(dataset_id, document_id):
-            response = requests.delete(f"{self.endpoint_url}/dataset/{dataset_id}/{document_id}")
+            response = self._session.delete(f"/dataset/{dataset_id}/{document_id}")
             check_naming_is_ok(response.status_code, dataset_id=dataset_id, document_id=document_id)
             check_response(response)
         else:
@@ -173,7 +182,7 @@ class GalahadClient:
             self.delete_all_documents_in_dataset(dataset_id)
 
     def list_all_classifiers(self) -> List[ClassifierInfo]:
-        response = requests.get(f"{self.endpoint_url}/classifier")
+        response = self._session.get("/classifier")
         check_response(response)
 
         info_list = []
@@ -183,7 +192,7 @@ class GalahadClient:
         return info_list
 
     def get_classifier_info(self, classifier_id: str) -> ClassifierInfo:
-        response = requests.get(f"{self.endpoint_url}/classifier/{classifier_id}")
+        response = self._session.get(f"/classifier/{classifier_id}")
         check_naming_is_ok(response.status_code, classifier_id=classifier_id)
         check_response(response)
 
@@ -191,7 +200,7 @@ class GalahadClient:
 
     # True: training has started. False: training has started already and function call had no effect
     def train_on_dataset(self, classifier_id: str, model_id: str, dataset_id: str) -> bool:
-        response = requests.post(f"{self.endpoint_url}/classifier/{classifier_id}/{model_id}/train/{dataset_id}")
+        response = self._session.post(f"/classifier/{classifier_id}/{model_id}/train/{dataset_id}")
         check_naming_is_ok(response.status_code, classifier_id=classifier_id, model_id=model_id, dataset_id=dataset_id)
         if response.status_code == 429:
             # logger.info("Training has already started! {create_error_message(variables)}")
@@ -202,7 +211,7 @@ class GalahadClient:
         return True
 
     def predict_on_document(self, classifier_id: str, model_id: str, document: Document) -> Document:
-        response = requests.post(
+        response = self._session.post(
             f"{self.endpoint_url}/classifier/{classifier_id}/{model_id}/predict", json=document.dict()
         )
 
