@@ -10,7 +10,7 @@ from galahad.server import GalahadServer
 from galahad.server.classifier import Classifier
 from galahad.server.dataclasses import Document, DocumentList
 from galahad.server.util import get_dataset_folder, get_document_path
-from tests.fixtures import TestClassifier
+from tests.fixtures import DummyClassifier
 
 tmpdir: Optional[Path] = None
 
@@ -35,7 +35,7 @@ def client(server):
 
 @pytest.fixture
 def classifier():
-    yield TestClassifier()
+    yield DummyClassifier()
 
 
 # Test
@@ -212,7 +212,7 @@ def test_delete_document_from_dataset_when_document_exists(client: TestClient):
 
 
 def test_create_classifier_with_invalid_name(server: GalahadServer):
-    test_classifier = TestClassifier()
+    test_classifier = DummyClassifier()
     with pytest.raises(ValueError):
         server.add_classifier("/this/is/a/path", test_classifier)
     with pytest.raises(ValueError):

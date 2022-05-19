@@ -4,7 +4,7 @@ from galahad.server.classifier import Classifier
 from galahad.server.dataclasses import Document
 
 
-class TestClassifier(Classifier):
+class DummyClassifier(Classifier):
     def train(self, model_id: str, documents: List[Document]):
         self._save_model(model_id, [d.json() for d in documents])
 

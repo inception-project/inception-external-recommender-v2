@@ -11,7 +11,7 @@ from uvicorn import Config
 from galahad.client import GalahadClient, HTTPError
 from galahad.server import GalahadServer
 from galahad.server.dataclasses import ClassifierInfo, Document
-from tests.fixtures import TestClassifier
+from tests.fixtures import DummyClassifier
 
 HOST = "127.0.0.1"
 PORT = 8000
@@ -77,7 +77,7 @@ class UvicornTestServer(uvicorn.Server):
 @pytest.fixture(scope="session")
 def server():
     galahad = GalahadServer()
-    classifier = TestClassifier()
+    classifier = DummyClassifier()
     galahad.add_classifier("classifier1", classifier)
     galahad.add_classifier("classifier2", classifier)
     galahad.add_classifier("classifier3", classifier)
