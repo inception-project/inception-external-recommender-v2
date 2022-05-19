@@ -1,5 +1,5 @@
 run:
-	uvicorn main:app --reload
+	uvicorn main:server --reload
 
 format:
 	black -l 120 main.py setup.py galahad/ tests/ scripts/
