@@ -28,7 +28,15 @@ test_dependencies = ["pytest", "datasets"]
 
 dev_dependencies = ["black", "isort"]
 
-doc_dependencies = ["sphinx", "sphinx-autodoc-typehints", "sphinx-rtd-theme"]
+doc_dependencies = [
+    "sphinx",
+    "sphinx-autodoc-typehints",
+    "sphinx-rtd-theme",
+    "sphinx-autoapi",
+    "m2r2",
+    "sphinx_copybutton",
+    "sphinx_rst_builder",
+]
 
 spacy_dependencies = [
     "spacy==3.2.*",

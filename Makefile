@@ -17,3 +17,6 @@ get_test_dependencies:
 
 build:
 	python -m build
+
+sphinx:
+	sphinx-build -b html docs/sphinx/ docs/build/html -j 4

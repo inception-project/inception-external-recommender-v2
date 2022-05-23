@@ -1,7 +1,7 @@
-# inception-external-recommender-v2
+# galahad
 
 Machine learning model server for NLP that can predict AND train. It can be e.g. used for interactive machine
-learning setups or as an external recommender with [INCEpTION](https://github.com/inception-project/inception).
+learning setups or as an external recommender with [INCEpTION](https://inception-project.github.io/).
 It provides a REST-like interface and hence is integrable with a wide range of applications and use cases.
 
 ## Installation
@@ -49,7 +49,7 @@ When running a Galahad instance, you can view the REST API documentation on http
 
 `galahad` can be used with a wide range of different clients. A few examples are described in the following:
 
-## INCEpTION
+### INCEpTION
 
 [INCEpTION](https://inception-project.github.io/) is a semantic annotation platform offering intelligent 
 assistance and knowledge management. It is widely used in the NLP community for annotating text.

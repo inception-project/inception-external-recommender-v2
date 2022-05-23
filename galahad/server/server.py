@@ -25,7 +25,10 @@ def check_naming_is_ok_regex(name: str):
 
 
 class GalahadServer(FastAPI):
+    """Creates a Galahad server instance."""
+
     def __init__(self, title: str = "Galahad Server", data_dir: pathlib.Path = None) -> None:
+        """Creates a Galahad server instance."""
         super().__init__(title=title)
 
         if data_dir is None:
@@ -127,7 +130,7 @@ def _register_routes(app: FastAPI):
     def delete_dataset(
         dataset_id: str = Path(..., title="Identifier of the dataset that should be deleted", regex=PATH_REGEX),
     ):
-        """Deletes the dataset with the given `dataset_id`  and its documents."""
+        """Deletes the dataset with the given `dataset_id` and its documents."""
         dataset_folder = get_dataset_folder(data_dir, dataset_id)
 
         if not dataset_folder.is_dir():
