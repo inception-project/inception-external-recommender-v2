@@ -90,7 +90,79 @@ We currently support part-of-speech tagging (`pos`) and named entity recognition
 ### Python client
 
 Galahad comes with a Python client that you can use to programmatically access the API without worrying about the 
-underlying protocol.
+underlying protocol. Please refer to the API documentation of Galahad that describes how to use it.
+
+## Architecture
+
+Galahad works on the basis of *datasets*, *documents*, *classifiers*, *models*, **annotations**.
+
+- **Document**: A document contains the text and annotations. 
+- **Dataset**: a dataset groups annotated documents together, representing e.g. an annotated corpus.
+- **Classifier**: A classifier is a machine learning algorithm that can be used to make predictions and can be optionally
+  be trained. The result of training is called the *model*. There can be multiple models for each classifier, e.g. one
+  per user. 
+- **Annotations**: Annotations consist of a type and features. Annotations can either represent spans by having a begin
+  and end feature that points into the text or be standalone.
+
+### Document representation
+
+Documents are represented as JSON objects. They have a text, a version and annotations. Annotations are grouped by 
+their type. An example document looks like the following:
+
+```json
+{
+    "text": "Joe waited for the train . The train was late .",
+    "version": 23,
+    "annotations": {
+        "t.token": [
+            {"begin": 0, "end": 3},
+            {"begin": 4, "end": 10},
+            {"begin": 11, "end": 14},
+            {"begin": 15, "end": 18},
+            {"begin": 19, "end": 24},
+            {"begin": 25, "end": 26},
+            {"begin": 27, "end": 30},
+            {"begin": 31, "end": 36},
+            {"begin": 37, "end": 40},
+            {"begin": 41, "end": 45},
+            {"begin": 46, "end": 47}
+        ],
+        "t.sentence": [
+            {"begin": 0, "end": 26},
+            {"begin": 27, "end": 47}
+        ],
+        "t.named_entity": [
+            {"begin": 0, "end": 3, "features": {"f.value": "PER"}}
+        ]
+    }
+}
+```
+
+### Disk layout
+
+Galahad stores datasets, documents and models on disk. The layout looks like the following:
+
+    data
+    ├───datasets
+    │   └───dataset1
+    │       └───document1
+    │       └───document2
+    │   └───dataset2
+    ├───locks
+    ├───models
+    │   └───classifier1
+    │   └───classifier2
+
+We also plan to add additional store alternatives to Galahad, for instance SQLite.
+
+### Classifier training
+
+Classifier training is done by creating a new process that then takes over the training. This is needed because of the
+GIL in Python. If we did not do this, then the main thread would be blocked and the web app could not respond to new requests.
+Also, only one model could be trained at the time. 
+
+When the request to train a classifier arrives, it is first checked whether training is not already
+running. Training the same classifier twice at the same time is prevented by using file locks.
 
 ## Development
 
