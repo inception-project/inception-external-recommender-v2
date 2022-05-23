@@ -1,6 +1,9 @@
 # galahad
 
-[![Documentation Status](https://readthedocs.org/projects/inception-galahad/badge/?version=latest)](https://inception-galahad.readthedocs.io/en/latest/?badge=latest)
+<a href='https://inception-galahad.readthedocs.io/en/latest'>
+    <img src='https://readthedocs.org/projects/inception-galahad/badge/?version=latest' alt='Documentation Status' />
+</a>
+
 
 Machine learning model server for NLP that can predict AND train. It can be e.g. used for interactive machine
 learning setups or as an external recommender with [INCEpTION](https://inception-project.github.io/).
