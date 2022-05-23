@@ -20,25 +20,27 @@ You can install the newest version via
 `galahad` is a server-based application that uses [FastApi](https://fastapi.tiangolo.com/)
 in the background. To get started, create a Python script like the one below.
 
-    import logging
-    
-    import uvicorn
-    
-    from galahad.server import GalahadServer
-    from galahad.server.contrib.ner.spacy_ner import SpacyNerTagger
-    from galahad.server.contrib.pos.spacy_pos import SpacyPosTagger
-    from galahad.server.contrib.sentence_classification.sklearn_sentence_classifier import SklearnSentenceClassifier
-    
-    server = GalahadServer("my_data_folder")
-    server.add_classifier("SpacyPOS", SpacyPosTagger("en_core_web_sm"))
-    server.add_classifier("SpacyNER", SpacyNerTagger("en_core_web_sm"))
-    server.add_classifier("Sent", SklearnSentenceClassifier())
-    
-    
-    if __name__ == "__main__":
-        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-    
-        uvicorn.run(server, host="127.0.0.1", port=8000)
+```python
+import logging
+
+import uvicorn
+
+from galahad.server import GalahadServer
+from galahad.server.contrib.ner.spacy_ner import SpacyNerTagger
+from galahad.server.contrib.pos.spacy_pos import SpacyPosTagger
+from galahad.server.contrib.sentence_classification.sklearn_sentence_classifier import SklearnSentenceClassifier
+
+server = GalahadServer("my_data_folder")
+server.add_classifier("SpacyPOS", SpacyPosTagger("en_core_web_sm"))
+server.add_classifier("SpacyNER", SpacyNerTagger("en_core_web_sm"))
+server.add_classifier("Sent", SklearnSentenceClassifier())
+
+
+if __name__ == "__main__":
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+
+    uvicorn.run(server, host="127.0.0.1", port=8000)
+```
 
 This starts `galahad` so that you can use it e.g. together with the `galahad` client
 or as a recommender in [INCEpTION](https://inception-project.github.io/).
