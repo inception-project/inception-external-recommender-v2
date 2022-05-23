@@ -63,7 +63,7 @@ Add a external recommender V2 to INCEpTION, check the server connection and then
 from the list. You are now ready to annotate!
 
 <p align="center">
-  <img src="img/galahad_inception.gif" />
+  <img src="https://raw.githubusercontent.com/inception-project/inception-external-recommender-v2/main/img/galahad_inception.gif" />
 </p>
 
 As an example, here we annotate named entities and use a pre-trained [Spacy](https://spacy.io/) model.
@@ -71,7 +71,7 @@ Gray are recommendations and red are real annotations. Annotators can accept, re
 made by Galahad.
 
 <p align="center">
-  <img src="img/inception_galahad_ner.png" />
+  <img src="https://raw.githubusercontent.com/inception-project/inception-external-recommender-v2/main/img/inception_galahad_ner.png" />
 </p>
 
 ### Gradio
@@ -84,7 +84,7 @@ After starting a Galahad instance, you can visualize the predictions of pretrain
 We currently support part-of-speech tagging (`pos`) and named entity recognition (`ner`) as tasks.
 
 <p align="center">
-  <img src="img/gradio_ner.png" alt="Gradio named entity recognition demo"/>
+  <img src="https://raw.githubusercontent.com/inception-project/inception-external-recommender-v2/main/img/gradio_ner.png" alt="Gradio named entity recognition demo"/>
 </p>
 
 ### Python client
