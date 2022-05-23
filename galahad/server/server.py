@@ -29,7 +29,7 @@ class GalahadServer(FastAPI):
         super().__init__(title=title)
 
         if data_dir is None:
-            data_dir = pathlib.Path.cwd() / "galahad"
+            data_dir = pathlib.Path.cwd() / "galahad_data"
 
         data_dir.mkdir(exist_ok=True, parents=True)
         get_datasets_folder(data_dir).mkdir(exist_ok=True, parents=True)
